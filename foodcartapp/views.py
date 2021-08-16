@@ -4,6 +4,9 @@ from .models import Product, Orders, OrdersMenuItem
 import json
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+import phonenumbers
+from phonenumbers import carrier
+from phonenumbers.phonenumberutil import number_type
 
 
 def banners_list_api(request):
@@ -61,14 +64,24 @@ def product_list_api(request):
 def register_order(request):
     order_info = request.data
     print(order_info)
-    if "products" not in order_info:
-        raise KeyError("products: Обязательное поле.")
-    elif order_info["products"] == str(order_info["products"]):
+    required_keys = ["products", "firstname", "lastname", "phonenumber", "address"]
+    for required_key in required_keys:
+      if required_key not in order_info:
+        raise KeyError("products, firstname, lastname, phonenumber, address: Обязательное поле.")
+    if order_info["products"] == str(order_info["products"]):
         raise TypeError("products: Ожидался list со значениями, но был получен 'str'.")
-    elif order_info["products"] == None:
-        raise ValueError("products: Это поле не может быть пустым.")
+    elif ("products", "firstname", "lastname", "phonenumber", "address") in order_info == None:
+        raise ValueError("products, firstname, lastname, phonenumber, address: Это поле не может быть пустым.")
     elif len(order_info["products"]) == 0:
         raise ValueError("products: Этот список не может быть пустым.")
+    elif order_info["firstname"] == None:
+        raise ValueError("firstname: Это поле не может быть пустым.")
+    elif len(order_info["phonenumber"]) == 0:
+        raise ValueError("phonenumber: Это поле не может быть пустым.")
+    elif carrier._is_mobile(number_type(phonenumbers.parse(order_info["phonenumber"]))) == False:
+        raise ValueError("phonenumber': Введен некорректный номер телефона.")
+    elif order_info["firstname"] != str(order_info["firstname"]):
+        raise TypeError("firstname: Not a valid string.")
     order = Orders.objects.create(first_name=order_info["firstname"], last_name=order_info["lastname"], phone_number=order_info["phonenumber"], address=order_info["address"])
     for product in order_info["products"]:
         OrdersMenuItem.objects.create(client=order, product_id=product["product"], product_quantity=product["quantity"])
