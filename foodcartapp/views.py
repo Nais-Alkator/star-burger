@@ -61,14 +61,14 @@ def product_list_api(request):
 def register_order(request):
     order_info = request.data
     print(order_info)
-    if order_info["products"] == str(order_info["products"]):
+    if "products" not in order_info:
+        raise KeyError("products: Обязательное поле.")
+    elif order_info["products"] == str(order_info["products"]):
         raise TypeError("products: Ожидался list со значениями, но был получен 'str'.")
     elif order_info["products"] == None:
         raise ValueError("products: Это поле не может быть пустым.")
     elif len(order_info["products"]) == 0:
         raise ValueError("products: Этот список не может быть пустым.")
-    elif "products" not in order_info:
-        raise KeyError("products: Обязательное поле.")
     order = Orders.objects.create(first_name=order_info["firstname"], last_name=order_info["lastname"], phone_number=order_info["phonenumber"], address=order_info["address"])
     for product in order_info["products"]:
         OrdersMenuItem.objects.create(client=order, product_id=product["product"], product_quantity=product["quantity"])
