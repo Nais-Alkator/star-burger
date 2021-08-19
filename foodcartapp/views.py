@@ -65,6 +65,8 @@ def register_order(request):
     order_info = request.data
     print(order_info)
     required_keys = ["products", "firstname", "lastname", "phonenumber", "address"]
+    last_product = Product.objects.last()
+    print(last_product.id)
     for required_key in required_keys:
       if required_key not in order_info:
         raise KeyError("products, firstname, lastname, phonenumber, address: Обязательное поле.")
@@ -82,6 +84,9 @@ def register_order(request):
         raise ValueError("phonenumber': Введен некорректный номер телефона.")
     elif order_info["firstname"] != str(order_info["firstname"]):
         raise TypeError("firstname: Not a valid string.")
+    for product in order_info["products"]:
+        if product["product"] > last_product.id:
+            raise ValueError("products: Недопустимый первичный ключ '{}'".format(product["product"]))
     order = Orders.objects.create(first_name=order_info["firstname"], last_name=order_info["lastname"], phone_number=order_info["phonenumber"], address=order_info["address"])
     for product in order_info["products"]:
         OrdersMenuItem.objects.create(client=order, product_id=product["product"], product_quantity=product["quantity"])
