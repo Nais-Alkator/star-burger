@@ -1,12 +1,16 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-from .models import Product, Orders, OrdersMenuItem
+from .models import Product, Order, OrderMenuItem
 import json
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import phonenumbers
 from phonenumbers import carrier
 from phonenumbers.phonenumberutil import number_type
+from rest_framework.serializers import ValidationError
+from rest_framework.serializers import Serializer
+from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ListField
 
 
 def banners_list_api(request):
@@ -59,35 +63,29 @@ def product_list_api(request):
         'indent': 4,
     })
 
+class OrderMenuItemSerializer(ModelSerializer):
+    class Meta:
+        model = OrderMenuItem
+        fields = ["client", "products", "quantity"]
+
+
+class OrderSerializer(ModelSerializer):
+    products = OrderMenuItemSerializer(many=True, allow_empty=False)
+    class Meta:
+        model = Order
+        fields = ["firstname", "lastname", "phonenumber", "address", "products"]
+
 
 @api_view(['POST'])
 def register_order(request):
     order_info = request.data
     print(order_info)
-    required_keys = ["products", "firstname", "lastname", "phonenumber", "address"]
     last_product = Product.objects.last()
-    print(last_product.id)
-    for required_key in required_keys:
-      if required_key not in order_info:
-        raise KeyError("products, firstname, lastname, phonenumber, address: Обязательное поле.")
-    if order_info["products"] == str(order_info["products"]):
-        raise TypeError("products: Ожидался list со значениями, но был получен 'str'.")
-    elif ("products", "firstname", "lastname", "phonenumber", "address") in order_info == None:
-        raise ValueError("products, firstname, lastname, phonenumber, address: Это поле не может быть пустым.")
-    elif len(order_info["products"]) == 0:
-        raise ValueError("products: Этот список не может быть пустым.")
-    elif order_info["firstname"] == None:
-        raise ValueError("firstname: Это поле не может быть пустым.")
-    elif len(order_info["phonenumber"]) == 0:
-        raise ValueError("phonenumber: Это поле не может быть пустым.")
-    elif carrier._is_mobile(number_type(phonenumbers.parse(order_info["phonenumber"]))) == False:
-        raise ValueError("phonenumber': Введен некорректный номер телефона.")
-    elif order_info["firstname"] != str(order_info["firstname"]):
-        raise TypeError("firstname: Not a valid string.")
-    for product in order_info["products"]:
-        if product["product"] > last_product.id:
-            raise ValueError("products: Недопустимый первичный ключ '{}'".format(product["product"]))
-    order = Orders.objects.create(first_name=order_info["firstname"], last_name=order_info["lastname"], phone_number=order_info["phonenumber"], address=order_info["address"])
-    for product in order_info["products"]:
-        OrdersMenuItem.objects.create(client=order, product_id=product["product"], product_quantity=product["quantity"])
+    order_serializer = OrderSerializer(data=order_info)
+    order_serializer.is_valid(raise_exception=True)
+    order = Order.objects.create(firstname=order_serializer.validated_data["firstname"], lastname=order_serializer.validated_data["lastname"], 
+        phonenumber=order_serializer.validated_data["phonenumber"], address=order_serializer.validated_data["address"])
+    products_fields = order_serializer.validated_data["products"]
+    products = [OrderMenuItem(client=order, **product) for product in products_fields]
+    OrderMenuItem.objects.bulk_create(products)
     return Response(order_info)
