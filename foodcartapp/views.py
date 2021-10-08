@@ -1,16 +1,13 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
 from .models import Product, Order, OrderMenuItem
-import json
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-import phonenumbers
-from phonenumbers import carrier
-from phonenumbers.phonenumberutil import number_type
 from rest_framework.serializers import ValidationError
 from rest_framework.serializers import Serializer
 from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import ListField
+from .serializers import OrderMenuItemSerializer, OrderSerializer
+from rest_framework import status
 
 
 def banners_list_api(request):
@@ -63,29 +60,14 @@ def product_list_api(request):
         'indent': 4,
     })
 
-class OrderMenuItemSerializer(ModelSerializer):
-    class Meta:
-        model = OrderMenuItem
-        fields = ["client", "products", "quantity"]
-
-
-class OrderSerializer(ModelSerializer):
-    products = OrderMenuItemSerializer(many=True, allow_empty=False)
-    class Meta:
-        model = Order
-        fields = ["firstname", "lastname", "phonenumber", "address", "products"]
-
 
 @api_view(['POST'])
 def register_order(request):
-    order_info = request.data
-    print(order_info)
-    last_product = Product.objects.last()
-    order_serializer = OrderSerializer(data=order_info)
+    order_serializer = OrderSerializer(data=request.data)
     order_serializer.is_valid(raise_exception=True)
     order = Order.objects.create(firstname=order_serializer.validated_data["firstname"], lastname=order_serializer.validated_data["lastname"], 
         phonenumber=order_serializer.validated_data["phonenumber"], address=order_serializer.validated_data["address"])
     products_fields = order_serializer.validated_data["products"]
     products = [OrderMenuItem(client=order, **product) for product in products_fields]
-    OrderMenuItem.objects.bulk_create(products)
-    return Response(order_info)
+    order = OrderSerializer(order)
+    return Response(order.data, status=status.HTTP_201_CREATED)
