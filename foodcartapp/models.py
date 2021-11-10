@@ -140,8 +140,9 @@ class Order(models.Model):
 
 class OrderMenuItem(models.Model):
     client = models.ForeignKey(Order, verbose_name="Заказ", related_name="client", blank=True, on_delete=models.CASCADE)
-    products = models.ForeignKey(Product, verbose_name="Категория товара", related_name="product", null=True, blank=True, on_delete=models.SET_NULL,)
+    product = models.ForeignKey(Product, verbose_name="Категория товара", related_name="order", null=True, blank=True, on_delete=models.CASCADE)
     quantity = models.IntegerField(verbose_name="Количество товара")
+    price_per_product = models.DecimalField(verbose_name="Цена одного товара", max_digits=7, decimal_places=2)
 
     class Meta:
         verbose_name = "Элементы заказа"
