@@ -138,11 +138,17 @@ class Order(models.Model):
         return f"{self.firstname} {self.lastname}"
 
 
-class OrderMenuItem(models.Model):
+class OrderItem(models.Model):
     client = models.ForeignKey(Order, verbose_name="Заказ", related_name="client", blank=True, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, verbose_name="Категория товара", related_name="order", null=True, blank=True, on_delete=models.CASCADE)
-    quantity = models.IntegerField(verbose_name="Количество товара")
-    price_per_product = models.DecimalField(verbose_name="Цена одного товара", max_digits=7, decimal_places=2)
+    quantity = models.IntegerField(verbose_name="Количество товара", validators = [MinValueValidator(1)])
+    price_product = models.DecimalField(verbose_name="Цена одного товара", max_digits=7, decimal_places=2, validators = [MinValueValidator(0.0)])
+
+
+    #def get_price_product(self, *args, **kwargs):
+        #self.price_product = self.product.price * self.quantity
+        #return super().save(*args, **kwargs)
+
 
     class Meta:
         verbose_name = "Элементы заказа"

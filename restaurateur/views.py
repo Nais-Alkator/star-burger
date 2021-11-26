@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 
-from foodcartapp.models import Product, Restaurant, Order, OrderMenuItem
+from foodcartapp.models import Product, Restaurant, Order, OrderItem
 from django.db.models import Count, Sum
 from django.db.models import F
 
@@ -98,36 +98,11 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    first_order = Order.objects.first()
-    first_order = OrderMenuItem.objects.filter(client=first_order)
-    for item in first_order:
-        item.price_per_product = item.product.price
-        item.save()
-    print(first_order)
-    print(type(first_order))
-    print(first_order.values())
-    first_order = first_order.annotate(sum_per_item=F("quantity")*F("price_per_product"))
-    print(first_order.values())
-    first_order = first_order.aggregate(sum_of_order=Sum("sum_per_item"))
-    print(first_order)
-
-
-    #price_order = first_order.annotate(price_order=F("quantity")
-
-
-
     orders = Order.objects.all()
     orders_info = []
     for order in orders:
-        order_items = OrderMenuItem.objects.filter(client=order)
-        for order_item in order_items:
-            order_item.price_per_product = order_item.product.price
-            order_item.save()
-        order_items = order_items.annotate(sum_per_item=F("quantity")*F("price_per_product"))
-        price_of_order = order_items.aggregate(sum_of_order=Sum("sum_per_item"))
-        print("Тип order_items  ", type(price_of_order))
-
-
+        order_items = OrderItem.objects.filter(client=order)
+        price_of_order = order_items.aggregate(sum_of_order=Sum("price_product"))
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
                       "price_of_order": price_of_order["sum_of_order"]}
         orders_info.append(order_info)
