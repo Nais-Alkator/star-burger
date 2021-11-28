@@ -18,6 +18,7 @@
       <th>Телефон</th>
       <th>Адрес доставки</th>
       <th>Сумма заказа</th>
+      <th>Ссылка на админку</th>
     </tr>
       {% for order_info in orders_info %}
         <tr>
@@ -25,7 +26,8 @@
           <td>{{order_info.firstname}} {{order_info.lastname}}</td>
           <td>{{order_info.phonenumber}}</td>
           <td>{{order_info.address}}</td>
-          <td>{{order_info.price_of_order}}
+          <td>{{order_info.price_of_order}}</td>
+          <td><a href="{% url 'admin:foodcartapp_order_change' order_info.id %}">Редактировать</a></td>
         </tr>
       {% endfor %}
    </table>

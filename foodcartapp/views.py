@@ -62,7 +62,6 @@ def product_list_api(request):
 @api_view(['POST'])
 @transaction.atomic
 def register_order(request):
-
     order_serializer = OrderSerializer(data=request.data)
     order_serializer.is_valid(raise_exception=True)
     order = Order.objects.create(firstname=order_serializer.validated_data["firstname"], lastname=order_serializer.validated_data["lastname"], 
@@ -76,5 +75,4 @@ def register_order(request):
             price_product=product.price * quantity
         )
     order = OrderSerializer(order)
-    zero = 0/0
     return Response(order.data, status=status.HTTP_201_CREATED)
