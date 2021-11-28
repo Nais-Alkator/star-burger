@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
-
+from django.http import HttpResponse, HttpResponseRedirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from .models import Product
 from .models import ProductCategory
 from .models import Restaurant
@@ -119,3 +120,13 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['firstname', 'lastname', 'phonenumber', 'address']
     inlines = [OrderItemInline]
     search_fields = ['firstname', 'lastname', 'phonenumber', 'address']
+
+
+    def response_change(self, request, obj):
+        response = super(OrderAdmin, self).response_post_save_change(request, obj)
+        if "next" in request.GET:
+            redirect_url = request.GET["next"]
+            if url_has_allowed_host_and_scheme(redirect_url, "localhost"):
+                return HttpResponseRedirect(request.GET['next'])
+        else:
+            return res
