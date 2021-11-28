@@ -3,11 +3,9 @@ from django.templatetags.static import static
 from .models import Product, Order, OrderItem
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
-from rest_framework.serializers import Serializer
-from rest_framework.serializers import ModelSerializer
 from .serializers import OrderItemSerializer, OrderSerializer
 from rest_framework import status
+from django.db import transaction
 
 
 def banners_list_api(request):
@@ -62,16 +60,14 @@ def product_list_api(request):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def register_order(request):
+
     order_serializer = OrderSerializer(data=request.data)
-    print("Успешно 1")
     order_serializer.is_valid(raise_exception=True)
-    print("Успешно 2")
     order = Order.objects.create(firstname=order_serializer.validated_data["firstname"], lastname=order_serializer.validated_data["lastname"], 
         phonenumber=order_serializer.validated_data["phonenumber"], address=order_serializer.validated_data["address"])
-    print("Успешно 3")
     products = [(Product.objects.get(id=product['product']), product['quantity']) for product in request.data['products']]
-    print("Успешно 4")
     for product, quantity in products:
         OrderItem.objects.create(
             client=order,
@@ -79,7 +75,6 @@ def register_order(request):
             quantity=quantity,
             price_product=product.price * quantity
         )
-        print("Успешно 5")
     order = OrderSerializer(order)
-    print("Успешно 6")
+    zero = 0/0
     return Response(order.data, status=status.HTTP_201_CREATED)
