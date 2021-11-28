@@ -130,7 +130,8 @@ class Order(models.Model):
     phonenumber = PhoneNumberField(verbose_name="Номер телефона")
     address = models.CharField(verbose_name="Адрес", max_length=100)
     STATUS_OF_ORDER_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
-    status_of_order = models.CharField(max_length=4, choices=STATUS_OF_ORDER_CHOICES, default="UNPR")
+    status_of_order = models.CharField(verbose_name="Статус заказа", max_length=4, choices=STATUS_OF_ORDER_CHOICES, default="UNPR")
+    comment = models.TextField(verbose_name="Комментарий к заказу", max_length=200, blank=True)
 
     class Meta:
         verbose_name = "Заказ"
