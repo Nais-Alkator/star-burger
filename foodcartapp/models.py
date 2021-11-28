@@ -129,6 +129,8 @@ class Order(models.Model):
     lastname = models.CharField(verbose_name="Фамилия", max_length=40)
     phonenumber = PhoneNumberField(verbose_name="Номер телефона")
     address = models.CharField(verbose_name="Адрес", max_length=100)
+    STATUS_OF_ORDER_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
+    status_of_order = models.CharField(max_length=4, choices=STATUS_OF_ORDER_CHOICES, default="UNPR")
 
     class Meta:
         verbose_name = "Заказ"
@@ -143,12 +145,6 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, verbose_name="Категория товара", related_name="order", null=True, blank=True, on_delete=models.CASCADE)
     quantity = models.IntegerField(verbose_name="Количество товара", validators = [MinValueValidator(1)])
     price_product = models.DecimalField(verbose_name="Цена одного товара", max_digits=7, decimal_places=2, validators = [MinValueValidator(0.0)])
-
-
-    #def get_price_product(self, *args, **kwargs):
-        #self.price_product = self.product.price * self.quantity
-        #return super().save(*args, **kwargs)
-
 
     class Meta:
         verbose_name = "Элементы заказа"

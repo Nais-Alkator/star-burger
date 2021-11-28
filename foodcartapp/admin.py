@@ -117,9 +117,9 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'phonenumber', 'address']
+    list_display = ['firstname', 'lastname', 'phonenumber', 'address', 'status_of_order']
     inlines = [OrderItemInline]
-    search_fields = ['firstname', 'lastname', 'phonenumber', 'address']
+    search_fields = ['firstname', 'lastname', 'phonenumber', 'address',]
 
 
     def response_change(self, request, obj):
@@ -129,4 +129,4 @@ class OrderAdmin(admin.ModelAdmin):
             if url_has_allowed_host_and_scheme(redirect_url, "localhost"):
                 return HttpResponseRedirect(request.GET['next'])
         else:
-            return res
+            return response
