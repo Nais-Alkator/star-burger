@@ -136,6 +136,8 @@ class Order(models.Model):
     registrated_at = models.DateTimeField(verbose_name="Зарегистрирован в", default=timezone.now)
     called_at = models.DateTimeField(verbose_name="Позвонили в", null=True)
     delivered_at = models.DateTimeField(verbose_name="Доставлен в", null=True )
+    PAYMENT_METHOD_CHOICES = [("cash", "Cash"), ("card", "Card")]
+    payment_method = models.CharField(verbose_name="Способ оплаты", max_length=15, choices=PAYMENT_METHOD_CHOICES, default="cash")
 
     class Meta:
         verbose_name = "Заказ"

@@ -20,6 +20,8 @@
       <th>Сумма заказа</th>
       <th>Статус</th>
       <th>Ссылка на админку</th>
+      <th>Способ оплаты</th>
+      <th>Комментарий</th>
     </tr>
       {% for order_info in orders_info %}
         <tr>
@@ -30,6 +32,8 @@
           <td>{{order_info.price_of_order}}</td>
           <td>{{order_info.status_of_order}}</td>
           <td><a href="{% url 'admin:foodcartapp_order_change' order_info.id %}?next={{request.path|urlencode}}">Редактировать</a></td>
+          <td>{{order_info.payment_method}}</td>
+          <td>{{order_info.comment}}</td>
         </tr>
       {% endfor %}
    </table>
