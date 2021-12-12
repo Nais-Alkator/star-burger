@@ -117,7 +117,7 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'phonenumber', 'address', 'status_of_order', 'registrated_at', 'called_at', 'delivered_at', 'payment_method']
+    list_display = ['firstname', 'lastname', 'phonenumber', 'address', 'status_of_order', 'registrated_at', 'called_at', 'delivered_at', 'payment_method',]
     inlines = [OrderItemInline]
     search_fields = ['firstname', 'lastname', 'phonenumber', 'address',]
 
@@ -130,3 +130,22 @@ class OrderAdmin(admin.ModelAdmin):
                 return HttpResponseRedirect(request.GET['next'])
         else:
             return response
+
+
+def select_restaurant_for_order():
+    restaurants = Restaurant.objects.all()
+    orders = Order.objects.all()
+    suitable_restaurants = []
+    for restaurant in restaurants:
+        for order in orders:
+            restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant)
+            products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
+            order_items = OrderItem.objects.filter(client=order)
+            products_of_order = [order_item.product for order_item in order_items]
+            for product in products_of_order:
+                if product in products_of_restaurant:
+                    suitable_restaurants.append(restaurant)
+    suitable_restaurants = list(set(suitable_restaurants))
+    return suitable_restaurants
+select_restaurant_for_order()
+

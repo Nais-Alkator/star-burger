@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 
-from foodcartapp.models import Product, Restaurant, Order, OrderItem
+from foodcartapp.models import Product, Restaurant, Order, OrderItem, RestaurantMenuItem
 from django.db.models import Count, Sum
 from django.db.models import F
 
@@ -96,6 +96,23 @@ def view_restaurants(request):
     })
 
 
+def select_suitable_restaurants_for_order(orders):
+    restaurants = Restaurant.objects.all()
+    orders = Order.objects.all()
+    suitable_restaurants = []
+    for restaurant in restaurants:
+        for order in orders:
+            restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant)
+            products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
+            order_items = OrderItem.objects.filter(client=order)
+            products_of_order = [order_item.product for order_item in order_items]
+            for product in products_of_order:
+                if product in products_of_restaurant:
+                    suitable_restaurants.append(restaurant)
+    suitable_restaurants = list(set(suitable_restaurants))
+    return suitable_restaurants
+
+
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = Order.objects.all()
@@ -107,5 +124,7 @@ def view_orders(request):
                       "price_of_order": price_of_order["sum_of_order"], 
                       "status_of_order": order.get_status_of_order_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment}
         orders_info.append(order_info)
-    orders_info = {"orders_info": orders_info}
+    suitable_restaurants = select_suitable_restaurants_for_order(orders)
+    orders_info = {"orders_info": orders_info, "suitable_restaurants": suitable_restaurants}
     return render(request, template_name='order_items.html', context=orders_info)
+    

@@ -135,9 +135,11 @@ class Order(models.Model):
     comment = models.TextField(verbose_name="Комментарий к заказу", max_length=200, blank=True)
     registrated_at = models.DateTimeField(verbose_name="Зарегистрирован в", default=timezone.now)
     called_at = models.DateTimeField(verbose_name="Позвонили в", null=True)
-    delivered_at = models.DateTimeField(verbose_name="Доставлен в", null=True )
+    delivered_at = models.DateTimeField(verbose_name="Доставлен в", null=True)
     PAYMENT_METHOD_CHOICES = [("cash", "Cash"), ("card", "Card")]
     payment_method = models.CharField(verbose_name="Способ оплаты", max_length=15, choices=PAYMENT_METHOD_CHOICES, default="cash")
+    restaurant = models.ForeignKey(Restaurant, verbose_name="Обслуживающий ресторан", null=True, related_name="order_restaurant", on_delete=models.CASCADE, default=1)
+    
 
     class Meta:
         verbose_name = "Заказ"

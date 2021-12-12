@@ -22,6 +22,7 @@
       <th>Ссылка на админку</th>
       <th>Способ оплаты</th>
       <th>Комментарий</th>
+      <th>Подходящие рестораны</th>
     </tr>
       {% for order_info in orders_info %}
         <tr>
@@ -34,6 +35,7 @@
           <td><a href="{% url 'admin:foodcartapp_order_change' order_info.id %}?next={{request.path|urlencode}}">Редактировать</a></td>
           <td>{{order_info.payment_method}}</td>
           <td>{{order_info.comment}}</td>
+          <td><details>{{suitable_restaurants}}</details></td>
         </tr>
       {% endfor %}
    </table>
