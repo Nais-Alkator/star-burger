@@ -12,6 +12,7 @@ from .models import Order
 from .models import OrderItem
 
 
+
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
     extra = 0
@@ -130,22 +131,3 @@ class OrderAdmin(admin.ModelAdmin):
                 return HttpResponseRedirect(request.GET['next'])
         else:
             return response
-
-
-def select_restaurant_for_order():
-    restaurants = Restaurant.objects.all()
-    orders = Order.objects.all()
-    suitable_restaurants = []
-    for restaurant in restaurants:
-        for order in orders:
-            restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant)
-            products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
-            order_items = OrderItem.objects.filter(client=order)
-            products_of_order = [order_item.product for order_item in order_items]
-            for product in products_of_order:
-                if product in products_of_restaurant:
-                    suitable_restaurants.append(restaurant)
-    suitable_restaurants = list(set(suitable_restaurants))
-    return suitable_restaurants
-select_restaurant_for_order()
-

@@ -35,7 +35,7 @@
           <td><a href="{% url 'admin:foodcartapp_order_change' order_info.id %}?next={{request.path|urlencode}}">Редактировать</a></td>
           <td>{{order_info.payment_method}}</td>
           <td>{{order_info.comment}}</td>
-          <td><details>{{suitable_restaurants}}</details></td>
+          <td><details>{% for restaurant in restaurants %}<p>{{restaurant.suitable_restaurant}} - {{restaurant.distance_to_suitable_restaurant}}</p>{% endfor %}</details></td>
         </tr>
       {% endfor %}
    </table>

@@ -3,14 +3,19 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
-
-
 from foodcartapp.models import Product, Restaurant, Order, OrderItem, RestaurantMenuItem
 from django.db.models import Count, Sum
-from django.db.models import F
+import requests
+from geopy.distance import lonlat, distance
+import os
+from dotenv import load_dotenv
+from operator import attrgetter
+
+load_dotenv()
+
+YANDEX_GEOCODER_API_TOKEN = os.getenv("YANDEX_GEOCODER_API_TOKEN")
 
 class Login(forms.Form):
     username = forms.CharField(
@@ -113,18 +118,46 @@ def select_suitable_restaurants_for_order(orders):
     return suitable_restaurants
 
 
+def fetch_coordinates(apikey, address):
+    base_url = "https://geocode-maps.yandex.ru/1.x"
+    response = requests.get(base_url, params={
+        "geocode": address,
+        "apikey": apikey,
+        "format": "json",
+    })
+    response.raise_for_status()
+    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
+
+    if not found_places:
+        return None
+
+    most_relevant = found_places[0]
+    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    return lon, lat
+
+
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = Order.objects.all()
     orders_info = []
+    suitable_restaurants = select_suitable_restaurants_for_order(orders)
+    distances_to_suitable_restaurants = []
+    restaurants = []
     for order in orders:
+        for suitable_restaurant in suitable_restaurants:
+            coordinates_of_restaurant = (suitable_restaurant.longitude, suitable_restaurant.latitude)
+            coodinates_of_order = fetch_coordinates(YANDEX_GEOCODER_API_TOKEN, order.address)
+            distance_to_suitable_restaurant = distance(coordinates_of_restaurant, coodinates_of_order)
+            distances_to_suitable_restaurants.append(distance_to_suitable_restaurant)
+            restaurant = {"suitable_restaurant": suitable_restaurant, "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
+            restaurants.append(restaurant)
         order_items = OrderItem.objects.filter(client=order)
         price_of_order = order_items.aggregate(sum_of_order=Sum("price_product"))
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
                       "price_of_order": price_of_order["sum_of_order"], 
                       "status_of_order": order.get_status_of_order_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment}
         orders_info.append(order_info)
-    suitable_restaurants = select_suitable_restaurants_for_order(orders)
-    orders_info = {"orders_info": orders_info, "suitable_restaurants": suitable_restaurants}
+    restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant']) 
+    orders_info = {"orders_info": orders_info, "restaurants": restaurants}
+    print(restaurants)
     return render(request, template_name='order_items.html', context=orders_info)
-    

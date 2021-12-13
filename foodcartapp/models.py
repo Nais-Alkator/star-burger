@@ -20,6 +20,9 @@ class Restaurant(models.Model):
         blank=True,
     )
 
+    longitude = models.DecimalField(verbose_name="долгота", max_digits=11, decimal_places=8)
+    latitude = models.DecimalField(verbose_name="широта", max_digits=10, decimal_places=8)
+
     class Meta:
         verbose_name = 'ресторан'
         verbose_name_plural = 'рестораны'
@@ -140,7 +143,6 @@ class Order(models.Model):
     payment_method = models.CharField(verbose_name="Способ оплаты", max_length=15, choices=PAYMENT_METHOD_CHOICES, default="cash")
     restaurant = models.ForeignKey(Restaurant, verbose_name="Обслуживающий ресторан", null=True, related_name="order_restaurant", on_delete=models.CASCADE, default=1)
     
-
     class Meta:
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
