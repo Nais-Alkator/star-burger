@@ -10,8 +10,23 @@ from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order
 from .models import OrderItem
+from address_and_places.models import Address
 
 
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    search_fields = [
+        'address',
+        'longitude',
+        'latitude',
+        'date_of_request'
+    ]
+    list_display = [
+        'address',
+        'longitude',
+        'latitude',
+        'date_of_request'
+    ]
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem

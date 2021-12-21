@@ -12,7 +12,7 @@ from geopy.distance import lonlat, distance
 import os
 from dotenv import load_dotenv
 from operator import attrgetter
-
+from address_and_places.models import Address
 load_dotenv()
 
 YANDEX_GEOCODER_API_TOKEN = os.getenv("YANDEX_GEOCODER_API_TOKEN")
@@ -101,15 +101,20 @@ def view_restaurants(request):
     })
 
 
+def create_geodata_of_place(place):
+    coordinates = fetch_coordinates(YANDEX_GEOCODER_API_TOKEN, place)
+    address = Address.objects.get_or_create(address=place, longitude=coordinates[0], latitude=coordinates[1])
+    return address
+
 def select_suitable_restaurants_for_order(orders):
     restaurants = Restaurant.objects.all()
     orders = Order.objects.all()
     suitable_restaurants = []
     for restaurant in restaurants:
         for order in orders:
-            restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant)
+            restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant).select_related("product")
             products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
-            order_items = OrderItem.objects.filter(client=order)
+            order_items = OrderItem.objects.filter(client=order).select_related("product")
             products_of_order = [order_item.product for order_item in order_items]
             for product in products_of_order:
                 if product in products_of_restaurant:
@@ -138,16 +143,21 @@ def fetch_coordinates(apikey, address):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    addresses = [address.address for address in Address.objects.all()]
     orders = Order.objects.all()
     orders_info = []
     suitable_restaurants = select_suitable_restaurants_for_order(orders)
     distances_to_suitable_restaurants = []
     restaurants = []
     for order in orders:
+        if order.address not in addresses:
+            order_address = create_geodata_of_place(order.address)
+        elif order.address in addresses:
+            order_address = Address.objects.get(address=order.address)
         for suitable_restaurant in suitable_restaurants:
+            restaurant_address = create_geodata_of_place(suitable_restaurant.address)
             coordinates_of_restaurant = (suitable_restaurant.longitude, suitable_restaurant.latitude)
-            coodinates_of_order = fetch_coordinates(YANDEX_GEOCODER_API_TOKEN, order.address)
-            distance_to_suitable_restaurant = distance(coordinates_of_restaurant, coodinates_of_order)
+            distance_to_suitable_restaurant = distance(coordinates_of_restaurant, (order_address.longitude, order_address.latitude))
             distances_to_suitable_restaurants.append(distance_to_suitable_restaurant)
             restaurant = {"suitable_restaurant": suitable_restaurant, "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
             restaurants.append(restaurant)
@@ -159,5 +169,4 @@ def view_orders(request):
         orders_info.append(order_info)
     restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant']) 
     orders_info = {"orders_info": orders_info, "restaurants": restaurants}
-    print(restaurants)
     return render(request, template_name='order_items.html', context=orders_info)
