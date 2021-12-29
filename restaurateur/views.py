@@ -6,16 +6,15 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from foodcartapp.models import Product, Restaurant, Order, OrderItem, RestaurantMenuItem
-from django.db.models import Count, Sum
+from django.db.models import Sum
 import requests
 from geopy.distance import lonlat, distance
 import os
-from dotenv import load_dotenv
-from operator import attrgetter
 from address_and_places.models import Address
-load_dotenv()
+from django.conf import settings
 
-YANDEX_GEOCODER_API_TOKEN = os.getenv("YANDEX_GEOCODER_API_TOKEN")
+
+YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
 
 class Login(forms.Form):
     username = forms.CharField(
