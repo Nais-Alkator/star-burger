@@ -129,17 +129,18 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+    STATUS_OF_ORDER_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
+    PAYMENT_METHOD_CHOICES = [("cash", "Cash"), ("card", "Card")]
+
     firstname = models.CharField(verbose_name="Имя", max_length=20)
     lastname = models.CharField(verbose_name="Фамилия", max_length=40)
     phonenumber = PhoneNumberField(verbose_name="Номер телефона", db_index=True)
     address = models.CharField(verbose_name="Адрес", max_length=100)
-    STATUS_OF_ORDER_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
     status_of_order = models.CharField(verbose_name="Статус заказа", max_length=4, choices=STATUS_OF_ORDER_CHOICES, default="UNPR", db_index=True)
     comment = models.TextField(verbose_name="Комментарий к заказу", max_length=200, blank=True)
     registrated_at = models.DateTimeField(verbose_name="Зарегистрирован в", default=timezone.now, db_index=True)
     called_at = models.DateTimeField(verbose_name="Позвонили в", null=True, db_index=True)
     delivered_at = models.DateTimeField(verbose_name="Доставлен в", null=True, db_index=True)
-    PAYMENT_METHOD_CHOICES = [("cash", "Cash"), ("card", "Card")]
     payment_method = models.CharField(verbose_name="Способ оплаты", max_length=15, choices=PAYMENT_METHOD_CHOICES, default="cash", db_index=True)
     restaurant = models.ForeignKey(Restaurant, verbose_name="Обслуживающий ресторан", null=True, related_name="order_restaurant", on_delete=models.CASCADE, default=1)
     
