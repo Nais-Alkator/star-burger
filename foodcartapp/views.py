@@ -69,7 +69,7 @@ def register_order(request):
     products = [(Product.objects.get(id=product['product']), product['quantity']) for product in request.data['products']]
     for product, quantity in products:
         OrderItem.objects.create(
-            client=order,
+            order=order,
             product=product,
             quantity=quantity,
             product_price=product.price * quantity

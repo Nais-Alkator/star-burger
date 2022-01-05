@@ -113,7 +113,7 @@ def select_suitable_restaurants_for_order(orders):
         for order in orders:
             restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant).select_related("product")
             products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
-            order_items = OrderItem.objects.filter(client=order).select_related("product")
+            order_items = OrderItem.objects.filter(order=order).select_related("product")
             products_of_order = [order_item.product for order_item in order_items]
             for product in products_of_order:
                 if product in products_of_restaurant:
@@ -160,7 +160,7 @@ def view_orders(request):
             distances_to_suitable_restaurants.append(distance_to_suitable_restaurant)
             restaurant = {"suitable_restaurant": suitable_restaurant, "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
             restaurants.append(restaurant)
-        order_items = OrderItem.objects.filter(client=order)
+        order_items = OrderItem.objects.filter(order=order)
         price_of_order = order_items.aggregate(sum_of_order=Sum("product_price"))
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
                       "price_of_order": price_of_order["sum_of_order"], 

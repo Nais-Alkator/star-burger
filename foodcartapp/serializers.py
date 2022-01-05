@@ -16,7 +16,7 @@ from rest_framework.serializers import ListField
 class OrderItemSerializer(ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ["quantity", "client", "product"]
+        fields = ["quantity", "order", "product"]
         
 
 class OrderSerializer(ModelSerializer):
