@@ -129,14 +129,14 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
-    STATUS_OF_ORDER_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
+    STATUS_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
     PAYMENT_METHOD_CHOICES = [("cash", "Cash"), ("card", "Card"), ("ns", "not specified")]
 
     firstname = models.CharField(verbose_name="Имя", max_length=20)
     lastname = models.CharField(verbose_name="Фамилия", max_length=40)
     phonenumber = PhoneNumberField(verbose_name="Номер телефона", db_index=True)
     address = models.CharField(verbose_name="Адрес", max_length=100)
-    status_of_order = models.CharField(verbose_name="Статус заказа", max_length=4, choices=STATUS_OF_ORDER_CHOICES, default="UNPR", db_index=True)
+    status = models.CharField(verbose_name="Статус заказа", max_length=4, choices=STATUS_CHOICES, default="UNPR", db_index=True)
     comment = models.TextField(verbose_name="Комментарий к заказу", blank=True)
     registrated_at = models.DateTimeField(verbose_name="Зарегистрирован в", default=timezone.now, db_index=True)
     called_at = models.DateTimeField(verbose_name="Позвонили в", blank=True, null=True, db_index=True)

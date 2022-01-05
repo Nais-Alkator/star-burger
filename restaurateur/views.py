@@ -164,7 +164,7 @@ def view_orders(request):
         price_of_order = order_items.aggregate(sum_of_order=Sum("price_product"))
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
                       "price_of_order": price_of_order["sum_of_order"], 
-                      "status_of_order": order.get_status_of_order_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment}
+                      "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment}
         orders_info.append(order_info)
     restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant']) 
     orders_info = {"orders_info": orders_info, "restaurants": restaurants}
