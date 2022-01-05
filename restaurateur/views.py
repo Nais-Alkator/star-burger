@@ -161,7 +161,7 @@ def view_orders(request):
             restaurant = {"suitable_restaurant": suitable_restaurant, "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
             restaurants.append(restaurant)
         order_items = OrderItem.objects.filter(client=order)
-        price_of_order = order_items.aggregate(sum_of_order=Sum("price_product"))
+        price_of_order = order_items.aggregate(sum_of_order=Sum("product_price"))
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
                       "price_of_order": price_of_order["sum_of_order"], 
                       "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment}
