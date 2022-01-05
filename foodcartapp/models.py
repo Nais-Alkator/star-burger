@@ -137,7 +137,7 @@ class Order(models.Model):
     phonenumber = PhoneNumberField(verbose_name="Номер телефона", db_index=True)
     address = models.CharField(verbose_name="Адрес", max_length=100)
     status_of_order = models.CharField(verbose_name="Статус заказа", max_length=4, choices=STATUS_OF_ORDER_CHOICES, default="UNPR", db_index=True)
-    comment = models.TextField(verbose_name="Комментарий к заказу", max_length=200, blank=True)
+    comment = models.TextField(verbose_name="Комментарий к заказу", blank=True)
     registrated_at = models.DateTimeField(verbose_name="Зарегистрирован в", default=timezone.now, db_index=True)
     called_at = models.DateTimeField(verbose_name="Позвонили в", blank=True, null=True, db_index=True)
     delivered_at = models.DateTimeField(verbose_name="Доставлен в", blank=True, null=True, db_index=True)
