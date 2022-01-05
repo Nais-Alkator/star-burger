@@ -142,7 +142,7 @@ class Order(models.Model):
     called_at = models.DateTimeField(verbose_name="Позвонили в", null=True, db_index=True)
     delivered_at = models.DateTimeField(verbose_name="Доставлен в", null=True, db_index=True)
     payment_method = models.CharField(verbose_name="Способ оплаты", max_length=15, choices=PAYMENT_METHOD_CHOICES, default="cash", db_index=True)
-    restaurant = models.ForeignKey(Restaurant, verbose_name="Обслуживающий ресторан", null=True, related_name="order_restaurant", on_delete=models.CASCADE, default=1)
+    restaurant = models.ForeignKey(Restaurant, verbose_name="Обслуживающий ресторан", related_name="order_restaurant", on_delete=models.CASCADE, default=1)
     
     class Meta:
         verbose_name = "Заказ"
