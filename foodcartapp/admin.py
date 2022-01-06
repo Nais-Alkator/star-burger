@@ -144,5 +144,4 @@ class OrderAdmin(admin.ModelAdmin):
             redirect_url = request.GET["next"]
             if url_has_allowed_host_and_scheme(redirect_url, "localhost"):
                 return HttpResponseRedirect(request.GET['next'])
-        else:
-            return response
+        return response
