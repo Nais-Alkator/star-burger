@@ -13,11 +13,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='order',
             name='called_at',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='Позвонили в'),
+            field=models.DateTimeField(
+                blank=True, db_index=True, null=True, verbose_name='Позвонили в'),
         ),
         migrations.AlterField(
             model_name='order',
             name='delivered_at',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='Доставлен в'),
+            field=models.DateTimeField(
+                blank=True, db_index=True, null=True, verbose_name='Доставлен в'),
         ),
     ]

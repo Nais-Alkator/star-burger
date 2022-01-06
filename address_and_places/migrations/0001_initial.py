@@ -15,11 +15,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Address',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('address', models.CharField(max_length=50, verbose_name='адрес')),
-                ('longitude', models.DecimalField(decimal_places=8, max_digits=11, verbose_name='долгота')),
-                ('latitude', models.DecimalField(decimal_places=8, max_digits=10, verbose_name='широта')),
-                ('date_of_request', models.DateTimeField(default=django.utils.timezone.now, null=True, verbose_name='дата запроса')),
+                ('longitude', models.DecimalField(
+                    decimal_places=8, max_digits=11, verbose_name='долгота')),
+                ('latitude', models.DecimalField(
+                    decimal_places=8, max_digits=10, verbose_name='широта')),
+                ('date_of_request', models.DateTimeField(
+                    default=django.utils.timezone.now, null=True, verbose_name='дата запроса')),
             ],
         ),
     ]

@@ -16,6 +16,7 @@ from django.conf import settings
 
 YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
 
+
 class Login(forms.Form):
     username = forms.CharField(
         label='Логин', max_length=75, required=True,
@@ -81,7 +82,8 @@ def view_products(request):
             **default_availability,
             **{item.restaurant_id: item.availability for item in product.menu_items.all()},
         }
-        orderer_availability = [availability[restaurant.id] for restaurant in restaurants]
+        orderer_availability = [availability[restaurant.id]
+                                for restaurant in restaurants]
 
         products_with_restaurants.append(
             (product, orderer_availability)
@@ -102,8 +104,10 @@ def view_restaurants(request):
 
 def create_geodata_of_place(place):
     coordinates = fetch_coordinates(YANDEX_GEOCODER_API_TOKEN, place)
-    address = Address.objects.get_or_create(address=place, longitude=coordinates[0], latitude=coordinates[1])
+    address = Address.objects.get_or_create(
+        address=place, longitude=coordinates[0], latitude=coordinates[1])
     return address
+
 
 def select_suitable_restaurants_for_order(orders):
     restaurants = Restaurant.objects.all()
@@ -111,10 +115,14 @@ def select_suitable_restaurants_for_order(orders):
     suitable_restaurants = []
     for restaurant in restaurants:
         for order in orders:
-            restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant).select_related("product")
-            products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
-            order_items = OrderItem.objects.filter(order=order).select_related("product")
-            products_of_order = [order_item.product for order_item in order_items]
+            restaurant_items = RestaurantMenuItem.objects.filter(
+                restaurant=restaurant).select_related("product")
+            products_of_restaurant = [
+                restaurant_item.product for restaurant_item in restaurant_items]
+            order_items = OrderItem.objects.filter(
+                order=order).select_related("product")
+            products_of_order = [
+                order_item.product for order_item in order_items]
             for product in products_of_order:
                 if product in products_of_restaurant:
                     suitable_restaurants.append(restaurant)
@@ -130,7 +138,8 @@ def fetch_coordinates(apikey, address):
         "format": "json",
     })
     response.raise_for_status()
-    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
+    found_places = response.json(
+    )['response']['GeoObjectCollection']['featureMember']
 
     if not found_places:
         return None
@@ -154,18 +163,25 @@ def view_orders(request):
         elif order.address in addresses:
             order_address = Address.objects.get(address=order.address)
         for suitable_restaurant in suitable_restaurants:
-            restaurant_address = create_geodata_of_place(suitable_restaurant.address)
-            coordinates_of_restaurant = (suitable_restaurant.longitude, suitable_restaurant.latitude)
-            distance_to_suitable_restaurant = distance(coordinates_of_restaurant, (order_address.longitude, order_address.latitude))
-            distances_to_suitable_restaurants.append(distance_to_suitable_restaurant)
-            restaurant = {"suitable_restaurant": suitable_restaurant, "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
+            restaurant_address = create_geodata_of_place(
+                suitable_restaurant.address)
+            coordinates_of_restaurant = (
+                suitable_restaurant.longitude, suitable_restaurant.latitude)
+            distance_to_suitable_restaurant = distance(
+                coordinates_of_restaurant, (order_address.longitude, order_address.latitude))
+            distances_to_suitable_restaurants.append(
+                distance_to_suitable_restaurant)
+            restaurant = {"suitable_restaurant": suitable_restaurant,
+                          "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
             restaurants.append(restaurant)
         order_items = OrderItem.objects.filter(order=order)
-        price_of_order = order_items.aggregate(sum_of_order=Sum("product_price"))
+        price_of_order = order_items.aggregate(
+            sum_of_order=Sum("product_price"))
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
-                      "price_of_order": price_of_order["sum_of_order"], 
+                      "price_of_order": price_of_order["sum_of_order"],
                       "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment}
         orders_info.append(order_info)
-    restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant']) 
+    restaurants = sorted(
+        restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
     orders_info = {"orders_info": orders_info, "restaurants": restaurants}
     return render(request, template_name='order_items.html', context=orders_info)

@@ -28,6 +28,7 @@ class AddressAdmin(admin.ModelAdmin):
         'date_of_request'
     ]
 
+
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
     extra = 0
@@ -109,14 +110,19 @@ class ProductAdmin(admin.ModelAdmin):
     def get_image_preview(self, obj):
         if not obj.image:
             return 'выберите картинку'
-        return format_html('<img src="{url}" style="max-height: 200px;"/>', url=obj.image.url)
+        return format_html(
+            '<img src="{url}" style="max-height: 200px;"/>',
+            url=obj.image.url)
     get_image_preview.short_description = 'превью'
 
     def get_image_list_preview(self, obj):
         if not obj.image or not obj.id:
             return 'нет картинки'
         edit_url = reverse('admin:foodcartapp_product_change', args=(obj.id,))
-        return format_html('<a href="{edit_url}"><img src="{src}" style="max-height: 50px;"/></a>', edit_url=edit_url, src=obj.image.url)
+        return format_html(
+            '<a href="{edit_url}"><img src="{src}" style="max-height: 50px;"/></a>',
+            edit_url=edit_url,
+            src=obj.image.url)
     get_image_list_preview.short_description = 'превью'
 
 
@@ -129,12 +135,17 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ("product_price",)
     model = OrderItem
     extra = 0
-    
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'phonenumber', 'address', 'status', 'registrated_at']
+    list_display = [
+        'firstname',
+        'lastname',
+        'phonenumber',
+        'address',
+        'status',
+        'registrated_at']
     inlines = [OrderItemInline]
     raw_id_fields = ('restaurant',)
 

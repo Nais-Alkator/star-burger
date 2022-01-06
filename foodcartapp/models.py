@@ -20,8 +20,14 @@ class Restaurant(models.Model):
         blank=True,
     )
 
-    longitude = models.DecimalField(verbose_name="долгота", max_digits=11, decimal_places=8)
-    latitude = models.DecimalField(verbose_name="широта", max_digits=10, decimal_places=8)
+    longitude = models.DecimalField(
+        verbose_name="долгота",
+        max_digits=11,
+        decimal_places=8)
+    latitude = models.DecimalField(
+        verbose_name="широта",
+        max_digits=10,
+        decimal_places=8)
 
     class Meta:
         verbose_name = 'ресторан'
@@ -130,20 +136,48 @@ class RestaurantMenuItem(models.Model):
 
 class Order(models.Model):
     STATUS_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
-    PAYMENT_METHOD_CHOICES = [("cash", "Cash"), ("card", "Card"), ("ns", "not specified")]
+    PAYMENT_METHOD_CHOICES = [
+        ("cash", "Cash"), ("card", "Card"), ("ns", "not specified")]
 
     firstname = models.CharField(verbose_name="Имя", max_length=20)
     lastname = models.CharField(verbose_name="Фамилия", max_length=40)
-    phonenumber = PhoneNumberField(verbose_name="Номер телефона", db_index=True)
+    phonenumber = PhoneNumberField(
+        verbose_name="Номер телефона", db_index=True)
     address = models.CharField(verbose_name="Адрес", max_length=100)
-    status = models.CharField(verbose_name="Статус заказа", max_length=4, choices=STATUS_CHOICES, default="UNPR", db_index=True)
+    status = models.CharField(
+        verbose_name="Статус заказа",
+        max_length=4,
+        choices=STATUS_CHOICES,
+        default="UNPR",
+        db_index=True)
     comment = models.TextField(verbose_name="Комментарий к заказу", blank=True)
-    registrated_at = models.DateTimeField(verbose_name="Зарегистрирован в", default=timezone.now, db_index=True)
-    called_at = models.DateTimeField(verbose_name="Позвонили в", blank=True, null=True, db_index=True)
-    delivered_at = models.DateTimeField(verbose_name="Доставлен в", blank=True, null=True, db_index=True)
-    payment_method = models.CharField(verbose_name="Способ оплаты", max_length=15, choices=PAYMENT_METHOD_CHOICES, default="ns", db_index=True)
-    restaurant = models.ForeignKey(Restaurant, verbose_name="Обслуживающий ресторан", related_name="order_restaurant", on_delete=models.CASCADE, default=1)
-    
+    registrated_at = models.DateTimeField(
+        verbose_name="Зарегистрирован в",
+        default=timezone.now,
+        db_index=True)
+    called_at = models.DateTimeField(
+        verbose_name="Позвонили в",
+        blank=True,
+        null=True,
+        db_index=True)
+    delivered_at = models.DateTimeField(
+        verbose_name="Доставлен в",
+        blank=True,
+        null=True,
+        db_index=True)
+    payment_method = models.CharField(
+        verbose_name="Способ оплаты",
+        max_length=15,
+        choices=PAYMENT_METHOD_CHOICES,
+        default="ns",
+        db_index=True)
+    restaurant = models.ForeignKey(
+        Restaurant,
+        verbose_name="Обслуживающий ресторан",
+        related_name="order_restaurant",
+        on_delete=models.CASCADE,
+        default=1)
+
     class Meta:
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
@@ -153,10 +187,25 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, verbose_name="Заказ", related_name="order_item", on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, verbose_name="Категория товара", related_name="orders_with_product", on_delete=models.CASCADE)
-    quantity = models.IntegerField(verbose_name="Количество товара", validators = [MinValueValidator(1)])
-    product_price = models.DecimalField(verbose_name="Цена одного товара", max_digits=7, decimal_places=2, validators = [MinValueValidator(0.0)])
+    order = models.ForeignKey(
+        Order,
+        verbose_name="Заказ",
+        related_name="order_item",
+        on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product,
+        verbose_name="Категория товара",
+        related_name="orders_with_product",
+        on_delete=models.CASCADE)
+    quantity = models.IntegerField(
+        verbose_name="Количество товара", validators=[
+            MinValueValidator(1)])
+    product_price = models.DecimalField(
+        verbose_name="Цена одного товара",
+        max_digits=7,
+        decimal_places=2,
+        validators=[
+            MinValueValidator(0.0)])
 
     class Meta:
         verbose_name = "Элементы заказа"

@@ -17,6 +17,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='address',
             name='address',
-            field=models.CharField(max_length=50, unique=True, verbose_name='адрес'),
+            field=models.CharField(
+                max_length=50, unique=True, verbose_name='адрес'),
         ),
     ]

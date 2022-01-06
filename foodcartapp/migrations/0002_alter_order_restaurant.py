@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='order',
             name='restaurant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='order_restaurant', to='foodcartapp.restaurant', verbose_name='Обслуживающий ресторан'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='order_restaurant', to='foodcartapp.restaurant', verbose_name='Обслуживающий ресторан'),
         ),
     ]
