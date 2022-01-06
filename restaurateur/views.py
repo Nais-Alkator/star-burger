@@ -6,13 +6,12 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from foodcartapp.models import Product, Restaurant, Order, OrderItem, RestaurantMenuItem
-from django.db.models import Sum
 import requests
 from geopy.distance import lonlat, distance
 import os
 from address_and_places.models import Address
 from django.conf import settings
-
+from itertools import groupby
 
 YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
 
@@ -156,8 +155,8 @@ def view_orders(request):
     orders_info = []
     suitable_restaurants = select_suitable_restaurants_for_order(orders)
     distances_to_suitable_restaurants = []
-    restaurants = []
     for order in orders:
+        restaurants = []
         if order.address not in addresses:
             order_address = create_geodata_of_place(order.address)
         elif order.address in addresses:
@@ -172,16 +171,14 @@ def view_orders(request):
             distances_to_suitable_restaurants.append(
                 distance_to_suitable_restaurant)
             restaurant = {"suitable_restaurant": suitable_restaurant,
-                          "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
+                          "distance_to_suitable_restaurant": round(distance_to_suitable_restaurant)}
             restaurants.append(restaurant)
         order_items = OrderItem.objects.filter(order=order)
-        price_of_order = order_items.aggregate(
-            sum_of_order=Sum("product_price"))
+        price_of_order = order_items.aggregate_price_order()
+        restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
                       "price_of_order": price_of_order["sum_of_order"],
-                      "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment}
+                      "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment, "restaurants": restaurants}
         orders_info.append(order_info)
-    restaurants = sorted(
-        restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
-    orders_info = {"orders_info": orders_info, "restaurants": restaurants}
+    orders_info = {"orders_info": orders_info}
     return render(request, template_name='order_items.html', context=orders_info)
