@@ -129,14 +129,14 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ("product_price",)
     model = OrderItem
     extra = 0
+    
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'phonenumber', 'address', 'status', 'registrated_at', 'called_at', 'delivered_at', 'payment_method',]
+    list_display = ['firstname', 'lastname', 'phonenumber', 'address', 'status', 'registrated_at']
     inlines = [OrderItemInline]
-    search_fields = ['firstname', 'lastname', 'phonenumber', 'address',]
-
+    raw_id_fields = ('restaurant',)
 
     def response_change(self, request, obj):
         response = super(OrderAdmin, self).response_change(request, obj)
