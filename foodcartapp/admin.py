@@ -139,7 +139,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 
     def response_change(self, request, obj):
-        response = super(OrderAdmin, self).response_post_save_change(request, obj)
+        response = super(OrderAdmin, self).response_change(request, obj)
         if "next" in request.GET:
             redirect_url = request.GET["next"]
             if url_has_allowed_host_and_scheme(redirect_url, "localhost"):

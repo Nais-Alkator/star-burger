@@ -67,7 +67,9 @@ def register_order(request):
     validated_data = order_serializer.validated_data
     order = Order.objects.create(firstname=validated_data["firstname"], lastname=validated_data["lastname"], 
         phonenumber=validated_data["phonenumber"], address=validated_data["address"])
-    products = order_serializer.validated_data['products']
+    products = validated_data['products']
+    print(type(products))
+    print(products)
     order_items = [
                     OrderItem(order=order, product_price=product['quantity'] * product['product'].price, **product) 
                     for product in products
