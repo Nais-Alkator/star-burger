@@ -132,7 +132,6 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class OrderItemInline(admin.TabularInline):
-    readonly_fields = ("product_price",)
     model = OrderItem
     extra = 0
 
