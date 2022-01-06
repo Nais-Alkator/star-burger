@@ -67,13 +67,11 @@ def register_order(request):
     validated_data = order_serializer.validated_data
     order = Order.objects.create(firstname=validated_data["firstname"], lastname=validated_data["lastname"], 
         phonenumber=validated_data["phonenumber"], address=validated_data["address"])
-    products = [(Product.objects.get(id=product['product']), product['quantity']) for product in request.data['products']]
-    for product, quantity in products:
-        OrderItem.objects.create(
-            order=order,
-            product=product,
-            quantity=quantity,
-            product_price=product.price * quantity
-        )
+    products = order_serializer.validated_data['products']
+    order_items = [
+                    OrderItem(order=order, product_price=product['quantity'] * product['product'].price, **product) 
+                    for product in products
+                  ]
+    OrderItem.objects.bulk_create(order_items)
     order = OrderSerializer(order)
     return Response(order.data, status=status.HTTP_201_CREATED)
