@@ -151,8 +151,9 @@ def fetch_coordinates(apikey, address):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    addresses = [address.address for address in Address.objects.all()]
-    orders = Order.objects.all()
+    addresses = list(Address.objects.values_list("address", flat=True))
+    #addresses = [address.address for address in Address.objects.all()]
+    orders = Order.objects.filter(status="UNPR")
     orders_info = []
     suitable_restaurants = select_suitable_restaurants_for_order(orders)
     distances_to_suitable_restaurants = []
