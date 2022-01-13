@@ -109,9 +109,8 @@ def create_geodata_of_place(place):
     return address
 
 
-def select_suitable_restaurants_for_order(orders):
+def select_suitable_restaurants_for_orders(orders):
     restaurants = Restaurant.objects.all()
-    orders = Order.objects.all()
     suitable_restaurants = []
     for restaurant in restaurants:
         for order in orders:
@@ -152,10 +151,9 @@ def fetch_coordinates(apikey, address):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     addresses = list(Address.objects.values_list("address", flat=True))
-    #addresses = [address.address for address in Address.objects.all()]
     orders = Order.objects.filter(status="UNPR")
     orders_info = []
-    suitable_restaurants = select_suitable_restaurants_for_order(orders)
+    suitable_restaurants = select_suitable_restaurants_for_orders(orders)
     distances_to_suitable_restaurants = []
     for order in orders:
         restaurants = []
