@@ -210,7 +210,7 @@ class OrderItem(models.Model):
         verbose_name="Количество товара", validators=[
             MinValueValidator(1)])
     product_price = models.DecimalField(
-        verbose_name="Цена одного товара",
+        verbose_name="Цена товара c учетом количества",
         max_digits=7,
         decimal_places=2,
         validators=[

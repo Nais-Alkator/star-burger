@@ -171,7 +171,7 @@ def view_orders(request):
             distances_to_suitable_restaurants.append(
                 distance_to_suitable_restaurant)
             restaurant = {"suitable_restaurant": suitable_restaurant,
-                          "distance_to_suitable_restaurant": round(distance_to_suitable_restaurant)}
+                          "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
             restaurants.append(restaurant)
         order_items = OrderItem.objects.filter(order=order)
         price_of_order = order_items.aggregate_price_order()
