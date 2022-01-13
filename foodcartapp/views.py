@@ -91,7 +91,7 @@ def register_order(request):
     OrderItem.objects.bulk_create(order_items)
     order.restaurant = get_suitable_restaurant_for_order(order)
     order.save()
-    order = OrderSerializer(order)
+    serialized_order = OrderSerializer(order)
     return Response(order.data, status=status.HTTP_201_CREATED)
 
 
