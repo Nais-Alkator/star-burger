@@ -83,8 +83,6 @@ def register_order(request):
                                  phonenumber=validated_data["phonenumber"], address=validated_data["address"], restaurant_id=1)
 
     products = validated_data['products']
-    print(type(products))
-    print(products)
     order_items = [
         OrderItem(
             order=order, product_price=product['quantity'] * product['product'].price, **product)
