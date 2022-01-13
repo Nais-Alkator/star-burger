@@ -204,7 +204,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(
         Product,
         verbose_name="Категория товара",
-        related_name="orders_with_product",
+        related_name="order_item",
         on_delete=models.CASCADE)
     quantity = models.IntegerField(
         verbose_name="Количество товара", validators=[
