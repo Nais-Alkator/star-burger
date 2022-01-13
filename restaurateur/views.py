@@ -13,6 +13,7 @@ from address_and_places.models import Address
 from django.conf import settings
 from itertools import groupby
 
+
 YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
 
 
@@ -177,7 +178,7 @@ def view_orders(request):
         price_of_order = order_items.aggregate_price_order()
         restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
-                      "price_of_order": price_of_order["sum_of_order"],
+                      "price_of_order": round(price_of_order["sum_of_order"], 2),
                       "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment, "restaurants": restaurants}
         orders_info.append(order_info)
     orders_info = {"orders_info": orders_info}
