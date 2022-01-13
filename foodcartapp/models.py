@@ -203,7 +203,7 @@ class OrderItem(models.Model):
         on_delete=models.CASCADE)
     product = models.ForeignKey(
         Product,
-        verbose_name="Категория товара",
+        verbose_name="Продукт",
         related_name="order_item",
         on_delete=models.CASCADE)
     quantity = models.IntegerField(
