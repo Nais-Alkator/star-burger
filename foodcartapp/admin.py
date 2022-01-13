@@ -149,7 +149,7 @@ class OrderAdmin(admin.ModelAdmin):
     raw_id_fields = ('restaurant',)
 
     def response_change(self, request, obj):
-        response = super(OrderAdmin, self).response_change(request, obj)
+        response = super().response_change(request, obj)
         if "next" in request.GET:
             redirect_url = request.GET["next"]
             if url_has_allowed_host_and_scheme(redirect_url, "localhost"):
