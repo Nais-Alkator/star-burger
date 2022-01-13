@@ -176,7 +176,9 @@ class Order(models.Model):
         Restaurant,
         verbose_name="Обслуживающий ресторан",
         related_name="order",
-        on_delete=models.CASCADE,
+        null=True,
+        on_delete=models.SET_NULL,
+
         )
     
     class Meta:
