@@ -177,7 +177,7 @@ class Order(models.Model):
         verbose_name="Обслуживающий ресторан",
         related_name="order",
         on_delete=models.CASCADE,
-        default=1)
+        )
     
     class Meta:
         verbose_name = "Заказ"
