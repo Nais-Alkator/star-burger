@@ -152,20 +152,22 @@ def fetch_coordinates(apikey, address):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    addresses = list(Address.objects.values_list("address", flat=True))
     orders = Order.objects.filter(status="UNPR")
     orders_info = []
     suitable_restaurants = select_suitable_restaurants_for_orders(orders)
     distances_to_suitable_restaurants = []
+    orders_addresses = list(orders.values_list("address", flat=True))
+    orders_geodata = Address.objects.filter(address__in=orders_addresses)
+    print("orders_addresses", orders_addresses)
     for order in orders:
         restaurants = []
-        if order.address not in addresses:
+        if order.address not in orders_addresses:
             try:
                 order_address = create_geodata_of_place(order.address)
             except IntegrityError:
                 continue
-        elif order.address in addresses:
-            order_address = Address.objects.get(address=order.address)
+        elif order.address in orders_addresses:
+            order_address = orders_geodata.get(address=order.address)
         for suitable_restaurant in suitable_restaurants:
             try:
                 restaurant_address = create_geodata_of_place(
