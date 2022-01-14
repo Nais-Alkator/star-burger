@@ -12,6 +12,7 @@ import os
 from address_and_places.models import Address
 from django.conf import settings
 from itertools import groupby
+from django.db.utils import IntegrityError
 
 
 YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
@@ -158,12 +159,18 @@ def view_orders(request):
     for order in orders:
         restaurants = []
         if order.address not in addresses:
-            order_address = create_geodata_of_place(order.address)
+            try:
+                order_address = create_geodata_of_place(order.address)
+            except IntegrityError:
+                continue
         elif order.address in addresses:
             order_address = Address.objects.get(address=order.address)
         for suitable_restaurant in suitable_restaurants:
-            restaurant_address = create_geodata_of_place(
-                suitable_restaurant.address)
+            try:
+                restaurant_address = create_geodata_of_place(
+                    suitable_restaurant.address)
+            except IntegrityError:
+                continue
             coordinates_of_restaurant = (
                 suitable_restaurant.longitude, suitable_restaurant.latitude)
             distance_to_suitable_restaurant = distance(
