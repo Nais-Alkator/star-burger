@@ -106,9 +106,9 @@ def view_restaurants(request):
 def create_geodata_of_place(place):
     coordinates = fetch_coordinates(YANDEX_GEOCODER_API_TOKEN, place)
     longitude, latitude = coordinates
-    address = Address.objects.get_or_create(
+    geodata_of_place = Address.objects.get_or_create(
         address=place, longitude=longitude, latitude=latitude)
-    return address
+    return geodata_of_place
 
 
 def select_suitable_restaurants_for_orders(orders):
