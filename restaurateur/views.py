@@ -156,18 +156,19 @@ def view_orders(request):
     orders_info = []
     suitable_restaurants = select_suitable_restaurants_for_orders(orders)
     distances_to_suitable_restaurants = []
+    addresses = list(Address.objects.all().values_list("address", flat=True))
     orders_addresses = list(orders.values_list("address", flat=True))
-    orders_geodata = Address.objects.filter(address__in=orders_addresses)
+    orders_addresses = Address.objects.filter(address__in=orders_addresses)
     print("orders_addresses", orders_addresses)
     for order in orders:
         restaurants = []
-        if order.address not in orders_addresses:
+        if order.address not in addresses:
             try:
                 order_address = create_geodata_of_place(order.address)
             except IntegrityError:
                 continue
-        elif order.address in orders_addresses:
-            order_address = orders_geodata.get(address=order.address)
+        elif order.address in addresses:
+            order_address = orders_addresses.get(address=order.address)
         for suitable_restaurant in suitable_restaurants:
             coordinates_of_restaurant = (
                 suitable_restaurant.longitude, suitable_restaurant.latitude)
