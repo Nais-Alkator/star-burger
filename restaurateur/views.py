@@ -169,11 +169,6 @@ def view_orders(request):
         elif order.address in orders_addresses:
             order_address = orders_geodata.get(address=order.address)
         for suitable_restaurant in suitable_restaurants:
-            try:
-                restaurant_address = create_geodata_of_place(
-                    suitable_restaurant.address)
-            except IntegrityError:
-                continue
             coordinates_of_restaurant = (
                 suitable_restaurant.longitude, suitable_restaurant.latitude)
             distance_to_suitable_restaurant = distance(
