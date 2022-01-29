@@ -186,5 +186,5 @@ def view_orders(request):
                       "price_of_order": round(price_of_order["sum_of_order"], 2),
                       "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment, "restaurants": restaurants}
         orders_info.append(order_info)
-    orders_info = {"orders_info": orders_info}
-    return render(request, template_name='order_items.html', context=orders_info)
+    orders = {"orders_info": orders_info}
+    return render(request, template_name='order_items.html', context=orders)
