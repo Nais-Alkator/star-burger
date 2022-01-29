@@ -6,9 +6,11 @@ class Address(models.Model):
     address = models.CharField(
         verbose_name="адрес", max_length=50, unique=True)
     longitude = models.DecimalField(
-        verbose_name="долгота", max_digits=11, decimal_places=8)
+        verbose_name="долгота", max_digits=11, decimal_places=8, 
+        null=True, blank=True)
     latitude = models.DecimalField(
-        verbose_name="широта", max_digits=10, decimal_places=8)
+        verbose_name="широта", max_digits=10, decimal_places=8,
+        null=True, blank=True)
     date_of_request = models.DateTimeField(
         verbose_name="дата запроса", null=True, default=timezone.now)
 
