@@ -159,7 +159,6 @@ def view_orders(request):
     addresses = list(Address.objects.all().values_list("address", flat=True))
     orders_addresses = list(orders.values_list("address", flat=True))
     orders_addresses = Address.objects.filter(address__in=orders_addresses)
-    print("orders_addresses", orders_addresses)
     for order in orders:
         restaurants = []
         if order.address not in addresses:
