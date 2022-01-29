@@ -177,6 +177,7 @@ class Order(models.Model):
         verbose_name="Обслуживающий ресторан",
         related_name="order",
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
 
         )
