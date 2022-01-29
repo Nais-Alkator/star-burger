@@ -175,7 +175,7 @@ class Order(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
         verbose_name="Обслуживающий ресторан",
-        related_name="order",
+        related_name="orders",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -202,12 +202,12 @@ class OrderItem(models.Model):
     order = models.ForeignKey(
         Order,
         verbose_name="Заказ",
-        related_name="item",
+        related_name="items",
         on_delete=models.CASCADE)
     product = models.ForeignKey(
         Product,
         verbose_name="Продукт",
-        related_name="order_item",
+        related_name="order_items",
         on_delete=models.CASCADE)
     quantity = models.IntegerField(
         verbose_name="Количество товара", validators=[

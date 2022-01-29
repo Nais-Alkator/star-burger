@@ -179,7 +179,7 @@ def view_orders(request):
             restaurant = {"suitable_restaurant": suitable_restaurant,
                           "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
             restaurants.append(restaurant)
-        order_items = order.item.all()
+        order_items = order.items.all()
         price_of_order = order_items.aggregate_price_order()
         restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
