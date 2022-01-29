@@ -80,7 +80,7 @@ def register_order(request):
     order_serializer.is_valid(raise_exception=True)
     validated_data = order_serializer.validated_data
     order = Order.objects.create(firstname=validated_data["firstname"], lastname=validated_data["lastname"],
-                                 phonenumber=validated_data["phonenumber"], address=validated_data["address"], restaurant_id=1)
+                                 phonenumber=validated_data["phonenumber"], address=validated_data["address"])
 
     products = validated_data['products']
     order_items = [
