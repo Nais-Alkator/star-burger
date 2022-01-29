@@ -193,7 +193,7 @@ class Order(models.Model):
 class OrderItemQuerySet(models.QuerySet):
     def aggregate_price_order(self):
         price_of_order = self.aggregate(
-            sum_of_order=Sum("product_price")
+            sum_of_order=Sum("total_product_price")
             )
         return price_of_order
 
@@ -212,7 +212,7 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(
         verbose_name="Количество товара", validators=[
             MinValueValidator(1)])
-    product_price = models.DecimalField(
+    total_product_price = models.DecimalField(
         verbose_name="Цена товара c учетом количества",
         max_digits=7,
         decimal_places=2,

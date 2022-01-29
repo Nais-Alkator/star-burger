@@ -85,7 +85,7 @@ def register_order(request):
     products = validated_data['products']
     order_items = [
         OrderItem(
-            order=order, product_price=product['quantity'] * product['product'].price, **product)
+            order=order, total_product_price=product['quantity'] * product['product'].price, **product)
         for product in products
     ]
     OrderItem.objects.bulk_create(order_items)
