@@ -128,6 +128,7 @@ def select_suitable_restaurants_for_orders(orders):
     suitable_restaurants = list(set(suitable_restaurants))
     return suitable_restaurants
 
+
 def fetch_coordinates(apikey, address):
     base_url = "https://geocode-maps.yandex.ru/1.x"
     response = requests.get(base_url, params={
