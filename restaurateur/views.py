@@ -13,6 +13,8 @@ from address_and_places.models import Address
 from django.conf import settings
 from itertools import groupby
 from django.db.utils import IntegrityError
+from urllib.error import HTTPError
+import logging
 
 
 YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
@@ -111,25 +113,36 @@ def create_geodata_of_place(place):
     return geodata_of_place
 
 
-def select_suitable_restaurants_for_orders(orders):
+def select_suitable_restaurants_for_orders2(orders):
     restaurants = Restaurant.objects.all()
     suitable_restaurants = []
     for restaurant in restaurants:
+        products_of_restaurant = list(RestaurantMenuItem.objects.filter(
+            restaurant=restaurant).values_list("product", flat=True))
         for order in orders:
-            restaurant_items = RestaurantMenuItem.objects.filter(
-                restaurant=restaurant).select_related("product")
-            products_of_restaurant = [
-                restaurant_item.product for restaurant_item in restaurant_items]
-            order_items = OrderItem.objects.filter(
-                order=order).select_related("product")
-            products_of_order = [
-                order_item.product for order_item in order_items]
+            products_of_order = list(OrderItem.objects.filter(
+                order=order,).values_list("product", flat=True))
             for product in products_of_order:
                 if product in products_of_restaurant:
                     suitable_restaurants.append(restaurant)
     suitable_restaurants = list(set(suitable_restaurants))
     return suitable_restaurants
 
+
+def select_suitable_restaurants_for_orders(orders):
+    restaurants = Restaurant.objects.all()
+    suitable_restaurants = []
+    for restaurant in restaurants:
+        products_of_restaurant = list(RestaurantMenuItem.objects.filter(
+            restaurant=restaurant).values_list("product", flat=True))
+        for order in orders:
+            products_of_order = list(OrderItem.objects.filter(
+                order=order).values_list("product", flat=True))
+            for product in products_of_order:
+                if product in products_of_restaurant:
+                    suitable_restaurants.append(restaurant)
+    suitable_restaurants = list(set(suitable_restaurants))
+    return suitable_restaurants
 
 def fetch_coordinates(apikey, address):
     base_url = "https://geocode-maps.yandex.ru/1.x"
@@ -164,7 +177,11 @@ def view_orders(request):
         if order.address not in addresses:
             try:
                 order_address = create_geodata_of_place(order.address)
-            except IntegrityError:
+            except requests.exceptions.HTTPError:
+                print("Неправильный адрес")
+                continue
+            except TypeError:
+                print("Неправильный адрес")
                 continue
         elif order.address in addresses:
             order_address = orders_addresses.get(address=order.address)
