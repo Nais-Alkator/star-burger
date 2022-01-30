@@ -113,22 +113,6 @@ def create_geodata_of_place(place):
     return geodata_of_place
 
 
-def select_suitable_restaurants_for_orders2(orders):
-    restaurants = Restaurant.objects.all()
-    suitable_restaurants = []
-    for restaurant in restaurants:
-        products_of_restaurant = list(RestaurantMenuItem.objects.filter(
-            restaurant=restaurant).values_list("product", flat=True))
-        for order in orders:
-            products_of_order = list(OrderItem.objects.filter(
-                order=order,).values_list("product", flat=True))
-            for product in products_of_order:
-                if product in products_of_restaurant:
-                    suitable_restaurants.append(restaurant)
-    suitable_restaurants = list(set(suitable_restaurants))
-    return suitable_restaurants
-
-
 def select_suitable_restaurants_for_orders(orders):
     restaurants = Restaurant.objects.all()
     suitable_restaurants = []
