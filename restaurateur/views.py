@@ -113,19 +113,12 @@ def create_geodata_of_place(place):
     return geodata_of_place
 
 
-def select_suitable_restaurants_for_orders(orders):
-    restaurants = Restaurant.objects.all()
+def select_suitable_restaurants_for_order(restaurants, products_of_order):
     suitable_restaurants = []
-    for restaurant in restaurants:
-        products_of_restaurant = list(RestaurantMenuItem.objects.filter(
-            restaurant=restaurant).values_list("product", flat=True))
-        for order in orders:
-            products_of_order = list(OrderItem.objects.filter(
-                order=order).values_list("product", flat=True))
-            for product in products_of_order:
-                if product in products_of_restaurant:
-                    suitable_restaurants.append(restaurant)
-    suitable_restaurants = list(set(suitable_restaurants))
+    for products_of_restaurant in restaurants:
+        if all(product in products_of_restaurant["products"]
+               for product in products_of_order):
+            suitable_restaurants.append(products_of_restaurant["restaurant"])
     return suitable_restaurants
 
 
@@ -152,24 +145,29 @@ def fetch_coordinates(apikey, address):
 def view_orders(request):
     orders = Order.objects.filter(status="UNPR")
     orders_info = []
-    suitable_restaurants = select_suitable_restaurants_for_orders(orders)
-    distances_to_suitable_restaurants = []
-    addresses = list(Address.objects.all().values_list("address", flat=True))
     orders_addresses = list(orders.values_list("address", flat=True))
-    orders_addresses = Address.objects.filter(address__in=orders_addresses)
+    geodata_of_orders = list(Address.objects.filter(
+        address__in=orders_addresses).values_list("address", flat=True))
+
+    for order_address in orders_addresses:
+        if order_address not in geodata_of_orders:
+            new__order_adress = create_geodata_of_place(order_address)
+
+    restaurants = Restaurant.objects.all()
+    products_of_restaurants = []
+    for restaurant in restaurants:
+        products_of_restaurant = {"restaurant": restaurant, "products": list(
+            RestaurantMenuItem.objects.filter(restaurant=restaurant).values_list("product", flat=True))}
+        products_of_restaurants.append(products_of_restaurant)
+
     for order in orders:
         restaurants = []
-        if order.address not in addresses:
-            try:
-                order_address = create_geodata_of_place(order.address)
-            except requests.exceptions.HTTPError:
-                print("Неправильный адрес")
-                continue
-            except TypeError:
-                print("Неправильный адрес")
-                continue
-        elif order.address in addresses:
-            order_address = orders_addresses.get(address=order.address)
+        order_address = Address.objects.get(address=order.address)
+        products_of_order = list(OrderItem.objects.filter(
+            order=order).values_list("product", flat=True))
+        suitable_restaurants = select_suitable_restaurants_for_order(
+            products_of_restaurants, products_of_order)
+        distances_to_suitable_restaurants = []
         for suitable_restaurant in suitable_restaurants:
             coordinates_of_restaurant = (
                 suitable_restaurant.longitude, suitable_restaurant.latitude)
@@ -182,7 +180,8 @@ def view_orders(request):
             restaurants.append(restaurant)
         order_items = order.items.all()
         price_of_order = order_items.aggregate_price_order()
-        restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
+        restaurants = sorted(
+            restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
         order_info = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
                       "price_of_order": round(price_of_order["sum_of_order"], 2),
                       "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment, "restaurants": restaurants}
