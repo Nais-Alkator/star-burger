@@ -58,6 +58,20 @@ def product_list_api(request):
         'indent': 4,
     })
 
+def get_suitable_restaurant_for_order(order):
+    restaurants = Restaurant.objects.all()
+    suitable_restaurants = []
+    for restaurant in restaurants:
+        restaurant_items = RestaurantMenuItem.objects.filter(restaurant=restaurant).select_related("product")
+        products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
+        order_items = OrderItem.objects.filter(order=order).select_related("product")
+        products_of_order = [order_item.product for order_item in order_items]
+        for product in products_of_order:
+            if product in products_of_restaurant:
+                suitable_restaurants.append(restaurant)
+    suitable_restaurants = list(set(suitable_restaurants))
+    return suitable_restaurants[0]
+
 
 @api_view(['POST'])
 @transaction.atomic
@@ -75,6 +89,8 @@ def register_order(request):
         for product in products
     ]
     OrderItem.objects.bulk_create(order_items)
+    order.restaurant = get_suitable_restaurant_for_order(order)
+    order.save()
     serialized_order = OrderSerializer(order)
     return Response(serialized_order.data, status=status.HTTP_201_CREATED)
 
