@@ -157,14 +157,13 @@ def view_orders(request):
     products_of_restaurants = []
     for restaurant in restaurants:
         products_of_restaurant = {"restaurant": restaurant, "products": list(
-            RestaurantMenuItem.objects.filter(restaurant=restaurant).values_list("product", flat=True))}
+            restaurant.menu_items.all().values_list("product", flat=True))}
         products_of_restaurants.append(products_of_restaurant)
 
     for order in orders:
         restaurants = []
         order_address = Address.objects.get(address=order.address)
-        products_of_order = list(OrderItem.objects.filter(
-            order=order).values_list("product", flat=True))
+        products_of_order = list(order.items.all().values_list("product", flat=True))
         suitable_restaurants = select_suitable_restaurants_for_order(
             products_of_restaurants, products_of_order)
         distances_to_suitable_restaurants = []
