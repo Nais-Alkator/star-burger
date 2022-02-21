@@ -140,8 +140,8 @@ class Order(models.Model):
     PAYMENT_METHOD_CHOICES = [
         ("cash", "Cash"), ("card", "Card"), ("ns", "not specified")]
 
-    firstname = models.CharField(verbose_name="Имя", max_length=20)
-    lastname = models.CharField(verbose_name="Фамилия", max_length=40)
+    firstname = models.CharField(verbose_name="Имя", max_length=50)
+    lastname = models.CharField(verbose_name="Фамилия", max_length=50)
     phonenumber = PhoneNumberField(
         verbose_name="Номер телефона", db_index=True)
     address = models.CharField(verbose_name="Адрес", max_length=100)
