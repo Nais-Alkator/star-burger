@@ -59,8 +59,6 @@ def product_list_api(request):
     })
 
 
-
-
 @api_view(['POST'])
 @transaction.atomic
 def register_order(request):
@@ -77,9 +75,5 @@ def register_order(request):
         for product in products
     ]
     OrderItem.objects.bulk_create(order_items)
-    order.restaurant = order.get_suitable_restaurant_for_order()
-    order.save()
     serialized_order = OrderSerializer(order)
     return Response(serialized_order.data, status=status.HTTP_201_CREATED)
-
-

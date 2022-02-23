@@ -181,20 +181,6 @@ class Order(models.Model):
         on_delete=models.SET_NULL,
         )
 
-    def get_suitable_restaurant_for_order(self):
-        restaurants = Restaurant.objects.all()
-        suitable_restaurants = []
-        for restaurant in restaurants:
-            restaurant_items = restaurant.menu_items.all()
-            products_of_restaurant = [restaurant_item.product for restaurant_item in restaurant_items]
-            order_items = self.items.all()
-            products_of_order = [order_item.product for order_item in order_items]
-            for product in products_of_order:
-                if product in products_of_restaurant:
-                    suitable_restaurants.append(restaurant)
-        suitable_restaurants = list(set(suitable_restaurants))
-        return suitable_restaurants[0]
-
     class Meta:
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
