@@ -16,6 +16,7 @@ from django.db.utils import IntegrityError
 from urllib.error import HTTPError
 import logging
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
 
 
 YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
@@ -117,7 +118,7 @@ def create_geodata_of_place(place):
 def select_suitable_restaurants_for_order(restaurants, products_of_order):
     suitable_restaurants = []
     for products_of_restaurant in restaurants:
-        if all(product in products_of_restaurant["products"]
+        if all(product in products_of_restaurant["products_ids"]
                for product in products_of_order):
             suitable_restaurants.append(products_of_restaurant["restaurant"])
     return suitable_restaurants
@@ -149,15 +150,18 @@ def view_orders(request):
     serialized_orders = []
     orders_addresses = list(orders.values_list("address", flat=True))
     addresses_geodata = Address.objects.filter(address__in=orders_addresses)
+    geodata_of_orders2 = addresses_geodata.values_list("address", flat=True)
     geodata_of_orders = list(addresses_geodata.filter(
         address__in=orders_addresses).values_list("address", flat=True))
-    restaurants = Restaurant.objects.all()
+    print("geodata_of_orders2", geodata_of_orders2)
+    print("geodata_of_orders", geodata_of_orders)
+
+    restaurants = Restaurant.objects.prefetch_related("menu_items")
+    
     products_of_restaurants = []
-    restaurants_items = RestaurantMenuItem.objects.all()
 
     for restaurant in restaurants:
-        products_of_restaurant = {"restaurant": restaurant, "products": list(
-            restaurants_items.filter(restaurant=restaurant).values_list("product", flat=True))}
+        products_of_restaurant = {'restaurant': restaurant, "products_ids": list(restaurant.menu_items.values_list("product_id", flat=True))}
         products_of_restaurants.append(products_of_restaurant)
 
     for order_address in orders_addresses:
@@ -174,7 +178,7 @@ def view_orders(request):
             order_address = addresses_geodata.get(address=order_address)
         except ObjectDoesNotExist:
             continue
-        order_items = order.items.all()
+        order_items = order.items.prefetch_related("order_items")
         products_of_order = list(order_items.values_list("product", flat=True))
         suitable_restaurants = select_suitable_restaurants_for_order(
             products_of_restaurants, products_of_order)
