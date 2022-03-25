@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
+from django.db.models import Sum
 
 
 class RestaurantQuerySet(models.QuerySet):
@@ -12,6 +13,14 @@ class RestaurantQuerySet(models.QuerySet):
             products_of_restaurant = {'restaurant': restaurant, "products_ids": [restaurant.product_id for restaurant in restaurant.menu_items.all()]}
             products_of_restaurants.append(products_of_restaurant)
         return products_of_restaurants
+
+    def select_suitable_restaurants_for_order(self, products_of_order):
+        suitable_restaurants = []
+        for products_of_restaurant in self:
+            if all(product in products_of_restaurant["products_ids"]
+                   for product in products_of_order):
+                suitable_restaurants.append(products_of_restaurant["restaurant"])
+        return suitable_restaurants
 
 
 class Restaurant(models.Model):
@@ -145,6 +154,12 @@ class RestaurantMenuItem(models.Model):
         return f"{self.restaurant.name} - {self.product.name}"
 
 
+class OrderQuerySet(models.QuerySet):
+    def annotate_price_of_order(self):
+        price_of_order = self.annotate(price_of_order=Sum("items__total_product_price"))
+        return price_of_order
+
+
 class Order(models.Model):
     STATUS_CHOICES = [("PR", "Processed"), ("UNPR", "Unprocessed")]
     PAYMENT_METHOD_CHOICES = [
@@ -190,6 +205,7 @@ class Order(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         )
+    objects = OrderQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Заказ"

@@ -182,7 +182,7 @@ def serialize_order(order, addresses_geodata, products_of_restaurants):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.filter(status="UNPR").prefetch_related("items").annotate(price_of_order=Sum("items__total_product_price"))
+    orders = Order.objects.filter(status="UNPR").prefetch_related("items").annotate_price_of_order()
     orders_addresses = list(orders.values_list("address", flat=True))
     addresses_geodata = Address.objects.filter(address__in=orders_addresses)
     addresses = list(addresses_geodata.values_list("address", flat=True))
@@ -196,7 +196,7 @@ def view_orders(request):
     for order in orders:
         serialized_order = serialize_order(order, addresses_geodata, products_of_restaurants)
         serialized_orders.append(serialized_order)
-        
+
     serialized_orders = {"serialized_orders": serialized_orders}
     return render(request, template_name='order_items.html',
                   context=serialized_orders)
