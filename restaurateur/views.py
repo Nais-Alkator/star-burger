@@ -151,8 +151,8 @@ def get_products_of_restaurants():
     return products_of_restaurants
 
 
-def check_order_address(order_address, geodata_of_orders):
-    if order_address not in geodata_of_orders:
+def check_order_address(order_address, addresses):
+    if order_address not in addresses:
         new_order_address = create_geodata_of_place(order_address)
 
 
@@ -198,9 +198,9 @@ def view_orders(request):
     orders = Order.objects.filter(status="UNPR").prefetch_related("items").annotate(price_of_order=Sum("items__total_product_price"))
     orders_addresses = list(orders.values_list("address", flat=True))
     addresses_geodata = Address.objects.filter(address__in=orders_addresses)
-    geodata_of_orders = list(addresses_geodata.values_list("address", flat=True))
+    addresses = list(addresses_geodata.values_list("address", flat=True))
     for order_address in orders_addresses:
-        check_order_address(order_address, geodata_of_orders)
+        check_order_address(order_address, addresses)
     products_of_restaurants = get_products_of_restaurants()
     serialized_orders = serialize_orders(orders, addresses_geodata, products_of_restaurants)
     serialized_orders = {"serialized_orders": serialized_orders}

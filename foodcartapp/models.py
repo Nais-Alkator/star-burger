@@ -208,7 +208,6 @@ class OrderItem(models.Model):
         decimal_places=2,
         validators=[
             MinValueValidator(0.0)])
-    objects = OrderItemQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Элементы заказа"
