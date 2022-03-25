@@ -164,7 +164,7 @@ def serialize_orders(orders, addresses_geodata, products_of_restaurants):
         suitable_restaurants = select_suitable_restaurants_for_order(
             products_of_restaurants, products_of_order)
 
-        if order_address.latitude or order_address.longitude != None:
+        if order_address.latitude or order_address.longitude:
             for suitable_restaurant in suitable_restaurants:
                 coordinates_of_restaurant = (suitable_restaurant.longitude, suitable_restaurant.latitude)
                 distance_to_suitable_restaurant = distance(
