@@ -142,15 +142,6 @@ def fetch_coordinates(apikey, address):
     return lon, lat
 
 
-def get_products_of_restaurants():
-    restaurants = Restaurant.objects.prefetch_related("menu_items")
-    products_of_restaurants = []
-    for restaurant in restaurants:
-        products_of_restaurant = {'restaurant': restaurant, "products_ids": [restaurant.product_id for restaurant in restaurant.menu_items.all()]}
-        products_of_restaurants.append(products_of_restaurant)
-    return products_of_restaurants
-
-
 def check_order_address(order_address, addresses):
     if order_address not in addresses:
         new_order_address = create_geodata_of_place(order_address)
@@ -201,7 +192,7 @@ def view_orders(request):
     addresses = list(addresses_geodata.values_list("address", flat=True))
     for order_address in orders_addresses:
         check_order_address(order_address, addresses)
-    products_of_restaurants = get_products_of_restaurants()
+    products_of_restaurants = Restaurant.objects.get_products_of_restaurants()
     serialized_orders = serialize_orders(orders, addresses_geodata, products_of_restaurants)
     serialized_orders = {"serialized_orders": serialized_orders}
     return render(request, template_name='order_items.html',

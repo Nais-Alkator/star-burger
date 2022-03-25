@@ -4,6 +4,16 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
 
 
+class RestaurantQuerySet(models.QuerySet):
+    def get_products_of_restaurants(self):
+        restaurants = self.prefetch_related("menu_items")
+        products_of_restaurants = []
+        for restaurant in restaurants:
+            products_of_restaurant = {'restaurant': restaurant, "products_ids": [restaurant.product_id for restaurant in restaurant.menu_items.all()]}
+            products_of_restaurants.append(products_of_restaurant)
+        return products_of_restaurants
+
+
 class Restaurant(models.Model):
     name = models.CharField(
         'название',
@@ -28,6 +38,7 @@ class Restaurant(models.Model):
         verbose_name="широта",
         max_digits=10,
         decimal_places=8)
+    objects = RestaurantQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'ресторан'
