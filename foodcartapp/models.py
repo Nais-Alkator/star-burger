@@ -2,7 +2,6 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
-from django.db.models import Sum
 
 
 class Restaurant(models.Model):
@@ -187,14 +186,6 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
-
-
-class OrderItemQuerySet(models.QuerySet):
-    def aggregate_price_order(self):
-        price_of_order = self.aggregate(
-            sum_of_order=Sum("total_product_price")
-            )
-        return price_of_order
 
 
 class OrderItem(models.Model):

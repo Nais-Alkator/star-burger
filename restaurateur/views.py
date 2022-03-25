@@ -13,6 +13,7 @@ from django.conf import settings
 import logging
 from django.core.exceptions import ObjectDoesNotExist
 from urllib.error import HTTPError
+from django.db.models import Sum
 
 YANDEX_GEOCODER_API_TOKEN = settings.YANDEX_GEOCODER_API_TOKEN
 
@@ -165,7 +166,8 @@ def serialize_orders(orders, addresses_geodata, products_of_restaurants):
         for address_geodata in addresses_geodata:
             if address_geodata.address == order_address:
                 order_address = address_geodata
-                
+                break
+
         order_items = order.items.all()
         products_of_order = [order_item.product_id for order_item in order_items]
         suitable_restaurants = select_suitable_restaurants_for_order(
@@ -180,11 +182,12 @@ def serialize_orders(orders, addresses_geodata, products_of_restaurants):
                               "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
                 restaurants.append(restaurant)
 
-        price_of_order = order_items.aggregate_price_order()
+        price_of_order = str(order.price_of_order)
+
         restaurants = sorted(
             restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
         order_raw = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
-                     "price_of_order": round(price_of_order["sum_of_order"], 2),
+                     "price_of_order": price_of_order,
                      "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment, "restaurants": restaurants}
         serialized_orders.append(order_raw)
     return serialized_orders
@@ -192,7 +195,7 @@ def serialize_orders(orders, addresses_geodata, products_of_restaurants):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.filter(status="UNPR").prefetch_related("items")
+    orders = Order.objects.filter(status="UNPR").prefetch_related("items").annotate(price_of_order=Sum("items__total_product_price"))
     orders_addresses = list(orders.values_list("address", flat=True))
     addresses_geodata = Address.objects.filter(address__in=orders_addresses)
     geodata_of_orders = list(addresses_geodata.values_list("address", flat=True))
