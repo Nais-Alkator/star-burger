@@ -147,41 +147,37 @@ def check_order_address(order_address, addresses):
         new_order_address = create_geodata_of_place(order_address)
 
 
-def serialize_orders(orders, addresses_geodata, products_of_restaurants):
-    serialized_orders = []
+def serialize_order(order, addresses_geodata, products_of_restaurants):
+    restaurants = []
+    order_address = order.address
 
-    for order in orders:
-        restaurants = []
-        order_address = order.address
+    for address_geodata in addresses_geodata:
+        if address_geodata.address == order_address:
+            order_address = address_geodata
+            break
 
-        for address_geodata in addresses_geodata:
-            if address_geodata.address == order_address:
-                order_address = address_geodata
-                break
+    order_items = order.items.all()
+    products_of_order = [order_item.product_id for order_item in order_items]
+    suitable_restaurants = select_suitable_restaurants_for_order(
+        products_of_restaurants, products_of_order)
 
-        order_items = order.items.all()
-        products_of_order = [order_item.product_id for order_item in order_items]
-        suitable_restaurants = select_suitable_restaurants_for_order(
-            products_of_restaurants, products_of_order)
+    if order_address.latitude or order_address.longitude:
+        for suitable_restaurant in suitable_restaurants:
+            coordinates_of_restaurant = (suitable_restaurant.longitude, suitable_restaurant.latitude)
+            distance_to_suitable_restaurant = distance(
+                coordinates_of_restaurant, (order_address.longitude, order_address.latitude))
+            restaurant = {"suitable_restaurant": suitable_restaurant,
+                          "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
+            restaurants.append(restaurant)
 
-        if order_address.latitude or order_address.longitude:
-            for suitable_restaurant in suitable_restaurants:
-                coordinates_of_restaurant = (suitable_restaurant.longitude, suitable_restaurant.latitude)
-                distance_to_suitable_restaurant = distance(
-                    coordinates_of_restaurant, (order_address.longitude, order_address.latitude))
-                restaurant = {"suitable_restaurant": suitable_restaurant,
-                              "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
-                restaurants.append(restaurant)
+    price_of_order = str(order.price_of_order)
 
-        price_of_order = str(order.price_of_order)
-
-        restaurants = sorted(
-            restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
-        order_raw = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
-                     "price_of_order": price_of_order,
-                     "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment, "restaurants": restaurants}
-        serialized_orders.append(order_raw)
-    return serialized_orders
+    restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
+    serialized_order = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
+                 "price_of_order": price_of_order,
+                 "status": order.get_status_display(), "payment_method": order.get_payment_method_display(), "comment": order.comment, "restaurants": restaurants}
+    
+    return serialized_order
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
@@ -190,10 +186,17 @@ def view_orders(request):
     orders_addresses = list(orders.values_list("address", flat=True))
     addresses_geodata = Address.objects.filter(address__in=orders_addresses)
     addresses = list(addresses_geodata.values_list("address", flat=True))
+
     for order_address in orders_addresses:
         check_order_address(order_address, addresses)
+
     products_of_restaurants = Restaurant.objects.get_products_of_restaurants()
-    serialized_orders = serialize_orders(orders, addresses_geodata, products_of_restaurants)
+    serialized_orders = []
+
+    for order in orders:
+        serialized_order = serialize_order(order, addresses_geodata, products_of_restaurants)
+        serialized_orders.append(serialized_order)
+        
     serialized_orders = {"serialized_orders": serialized_orders}
     return render(request, template_name='order_items.html',
                   context=serialized_orders)
