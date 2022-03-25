@@ -161,10 +161,11 @@ def serialize_orders(orders, addresses_geodata, products_of_restaurants):
     for order in orders:
         restaurants = []
         order_address = order.address
-        try:
-            order_address = addresses_geodata.get(address=order_address)
-        except ObjectDoesNotExist:
-            continue
+
+        for address_geodata in addresses_geodata:
+            if address_geodata.address == order_address:
+                order_address = address_geodata
+                
         order_items = order.items.all()
         products_of_order = [order_item.product_id for order_item in order_items]
         suitable_restaurants = select_suitable_restaurants_for_order(
