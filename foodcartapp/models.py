@@ -152,7 +152,7 @@ class OrderQuerySet(models.QuerySet):
         return price
 
     def select_suitable_restaurants_for_orders(self, products_of_restaurants):
-        suitable_restaurants_for_order = []
+        suitable_restaurants_for_orders = []
         for order in self:
             suitable_restaurants = []
             order_items = order.items.all()
@@ -163,7 +163,7 @@ class OrderQuerySet(models.QuerySet):
                     suitable_restaurants.append(products_of_restaurant["restaurant"])
             suitable_restaurants = {"order_id": order.id, "suitable_restaurants": suitable_restaurants}
             suitable_restaurants_for_order.append(suitable_restaurants)
-        return suitable_restaurants_for_order
+        return suitable_restaurants_for_orders
 
 
 class Order(models.Model):
