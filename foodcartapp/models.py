@@ -14,14 +14,6 @@ class RestaurantQuerySet(models.QuerySet):
             products_of_restaurants.append(products_of_restaurant)
         return products_of_restaurants
 
-    def select_suitable_restaurants_for_order(self, products_of_order):
-        suitable_restaurants = []
-        for products_of_restaurant in self:
-            if all(product in products_of_restaurant["products_ids"]
-                   for product in products_of_order):
-                suitable_restaurants.append(products_of_restaurant["restaurant"])
-        return suitable_restaurants
-
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -155,9 +147,23 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderQuerySet(models.QuerySet):
-    def annotate_price_of_order(self):
-        price_of_order = self.annotate(price_of_order=Sum("items__total_product_price"))
-        return price_of_order
+    def annotate_price(self):
+        price = self.annotate(price=Sum("items__total_product_price"))
+        return price
+
+    def select_suitable_restaurants_for_orders(self, products_of_restaurants):
+        suitable_restaurants_for_order = []
+        for order in self:
+            suitable_restaurants = []
+            order_items = order.items.all()
+            products_of_order = [order_item.product_id for order_item in order_items]
+            for products_of_restaurant in products_of_restaurants:
+                if all(product in products_of_restaurant["products_ids"]
+                       for product in products_of_order):
+                    suitable_restaurants.append(products_of_restaurant["restaurant"])
+            suitable_restaurants = {"order_id": order.id, "suitable_restaurants": suitable_restaurants}
+            suitable_restaurants_for_order.append(suitable_restaurants)
+        return suitable_restaurants_for_order
 
 
 class Order(models.Model):

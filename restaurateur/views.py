@@ -114,15 +114,6 @@ def create_geodata_of_place(place):
     return geodata_of_place
 
 
-def select_suitable_restaurants_for_order(restaurants, products_of_order):
-    suitable_restaurants = []
-    for products_of_restaurant in restaurants:
-        if all(product in products_of_restaurant["products_ids"]
-               for product in products_of_order):
-            suitable_restaurants.append(products_of_restaurant["restaurant"])
-    return suitable_restaurants
-
-
 def fetch_coordinates(apikey, address):
     base_url = "https://geocode-maps.yandex.ru/1.x"
     response = requests.get(base_url, params={
@@ -147,7 +138,7 @@ def check_order_address(order_address, addresses):
         new_order_address = create_geodata_of_place(order_address)
 
 
-def serialize_order(order, addresses_geodata, products_of_restaurants):
+def serialize_order(order, addresses_geodata, products_of_restaurants, suitable_restaurants_for_order):
     restaurants = []
     order_address = order.address
 
@@ -156,13 +147,8 @@ def serialize_order(order, addresses_geodata, products_of_restaurants):
             order_address = address_geodata
             break
 
-    order_items = order.items.all()
-    products_of_order = [order_item.product_id for order_item in order_items]
-    suitable_restaurants = select_suitable_restaurants_for_order(
-        products_of_restaurants, products_of_order)
-
     if order_address.latitude or order_address.longitude:
-        for suitable_restaurant in suitable_restaurants:
+        for suitable_restaurant in suitable_restaurants_for_order:
             coordinates_of_restaurant = (suitable_restaurant.longitude, suitable_restaurant.latitude)
             distance_to_suitable_restaurant = distance(
                 coordinates_of_restaurant, (order_address.longitude, order_address.latitude))
@@ -170,7 +156,7 @@ def serialize_order(order, addresses_geodata, products_of_restaurants):
                           "distance_to_suitable_restaurant": distance_to_suitable_restaurant}
             restaurants.append(restaurant)
 
-    price_of_order = str(order.price_of_order)
+    price_of_order = str(order.price)
 
     restaurants = sorted(restaurants, key=lambda k: k['distance_to_suitable_restaurant'])
     serialized_order = {"id": order.id, "firstname": order.firstname, "lastname": order.lastname, "phonenumber": order.phonenumber, "address": order.address,
@@ -182,7 +168,7 @@ def serialize_order(order, addresses_geodata, products_of_restaurants):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.filter(status="UNPR").prefetch_related("items").annotate_price_of_order()
+    orders = Order.objects.filter(status="UNPR").prefetch_related("items").annotate_price()
     orders_addresses = list(orders.values_list("address", flat=True))
     addresses_geodata = Address.objects.filter(address__in=orders_addresses)
     addresses = list(addresses_geodata.values_list("address", flat=True))
@@ -191,12 +177,17 @@ def view_orders(request):
         check_order_address(order_address, addresses)
 
     products_of_restaurants = Restaurant.objects.get_products_of_restaurants()
+    suitable_restaurants_for_orders = orders.select_suitable_restaurants_for_orders(products_of_restaurants)
     serialized_orders = []
 
     for order in orders:
-        serialized_order = serialize_order(order, addresses_geodata, products_of_restaurants)
+        for item in suitable_restaurants_for_orders:
+            if item["order_id"] == order.id:
+                suitable_restaurants_for_order = item["suitable_restaurants"]
+                break
+        serialized_order = serialize_order(order, addresses_geodata, products_of_restaurants, suitable_restaurants_for_order)
         serialized_orders.append(serialized_order)
-
+        
     serialized_orders = {"serialized_orders": serialized_orders}
     return render(request, template_name='order_items.html',
                   context=serialized_orders)
